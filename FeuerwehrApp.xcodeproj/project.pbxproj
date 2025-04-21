@@ -1,0 +1,596 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXContainerItemProxy section */
+		27845B7E2D81EBB2007FAEF2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 27845B652D81EBB1007FAEF2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 27845B6C2D81EBB1007FAEF2;
+			remoteInfo = FeuerwehrApp;
+		};
+		27845B882D81EBB2007FAEF2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 27845B652D81EBB1007FAEF2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 27845B6C2D81EBB1007FAEF2;
+			remoteInfo = FeuerwehrApp;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		27845B6D2D81EBB1007FAEF2 /* FeuerwehrApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FeuerwehrApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		27845B7D2D81EBB2007FAEF2 /* FeuerwehrAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FeuerwehrAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		27845B872D81EBB2007FAEF2 /* FeuerwehrAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FeuerwehrAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		279A247A2DA04FBD006445A0 /* Exceptions for "FeuerwehrApp" folder in "FeuerwehrApp" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 27845B6C2D81EBB1007FAEF2 /* FeuerwehrApp */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		27845B6F2D81EBB1007FAEF2 /* FeuerwehrApp */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				279A247A2DA04FBD006445A0 /* Exceptions for "FeuerwehrApp" folder in "FeuerwehrApp" target */,
+			);
+			path = FeuerwehrApp;
+			sourceTree = "<group>";
+		};
+		27845B802D81EBB2007FAEF2 /* FeuerwehrAppTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = FeuerwehrAppTests;
+			sourceTree = "<group>";
+		};
+		27845B8A2D81EBB2007FAEF2 /* FeuerwehrAppUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = FeuerwehrAppUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		27845B6A2D81EBB1007FAEF2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		27845B7A2D81EBB2007FAEF2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		27845B842D81EBB2007FAEF2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		27845B642D81EBB1007FAEF2 = {
+			isa = PBXGroup;
+			children = (
+				27845B6F2D81EBB1007FAEF2 /* FeuerwehrApp */,
+				27845B802D81EBB2007FAEF2 /* FeuerwehrAppTests */,
+				27845B8A2D81EBB2007FAEF2 /* FeuerwehrAppUITests */,
+				27845B6E2D81EBB1007FAEF2 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		27845B6E2D81EBB1007FAEF2 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				27845B6D2D81EBB1007FAEF2 /* FeuerwehrApp.app */,
+				27845B7D2D81EBB2007FAEF2 /* FeuerwehrAppTests.xctest */,
+				27845B872D81EBB2007FAEF2 /* FeuerwehrAppUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		27845B6C2D81EBB1007FAEF2 /* FeuerwehrApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 27845B912D81EBB2007FAEF2 /* Build configuration list for PBXNativeTarget "FeuerwehrApp" */;
+			buildPhases = (
+				27845B692D81EBB1007FAEF2 /* Sources */,
+				27845B6A2D81EBB1007FAEF2 /* Frameworks */,
+				27845B6B2D81EBB1007FAEF2 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				27845B6F2D81EBB1007FAEF2 /* FeuerwehrApp */,
+			);
+			name = FeuerwehrApp;
+			packageProductDependencies = (
+			);
+			productName = FeuerwehrApp;
+			productReference = 27845B6D2D81EBB1007FAEF2 /* FeuerwehrApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+		27845B7C2D81EBB2007FAEF2 /* FeuerwehrAppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 27845B942D81EBB2007FAEF2 /* Build configuration list for PBXNativeTarget "FeuerwehrAppTests" */;
+			buildPhases = (
+				27845B792D81EBB2007FAEF2 /* Sources */,
+				27845B7A2D81EBB2007FAEF2 /* Frameworks */,
+				27845B7B2D81EBB2007FAEF2 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				27845B7F2D81EBB2007FAEF2 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				27845B802D81EBB2007FAEF2 /* FeuerwehrAppTests */,
+			);
+			name = FeuerwehrAppTests;
+			packageProductDependencies = (
+			);
+			productName = FeuerwehrAppTests;
+			productReference = 27845B7D2D81EBB2007FAEF2 /* FeuerwehrAppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		27845B862D81EBB2007FAEF2 /* FeuerwehrAppUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 27845B972D81EBB2007FAEF2 /* Build configuration list for PBXNativeTarget "FeuerwehrAppUITests" */;
+			buildPhases = (
+				27845B832D81EBB2007FAEF2 /* Sources */,
+				27845B842D81EBB2007FAEF2 /* Frameworks */,
+				27845B852D81EBB2007FAEF2 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				27845B892D81EBB2007FAEF2 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				27845B8A2D81EBB2007FAEF2 /* FeuerwehrAppUITests */,
+			);
+			name = FeuerwehrAppUITests;
+			packageProductDependencies = (
+			);
+			productName = FeuerwehrAppUITests;
+			productReference = 27845B872D81EBB2007FAEF2 /* FeuerwehrAppUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		27845B652D81EBB1007FAEF2 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1620;
+				LastUpgradeCheck = 1630;
+				TargetAttributes = {
+					27845B6C2D81EBB1007FAEF2 = {
+						CreatedOnToolsVersion = 16.2;
+						LastSwiftMigration = 1620;
+					};
+					27845B7C2D81EBB2007FAEF2 = {
+						CreatedOnToolsVersion = 16.2;
+						TestTargetID = 27845B6C2D81EBB1007FAEF2;
+					};
+					27845B862D81EBB2007FAEF2 = {
+						CreatedOnToolsVersion = 16.2;
+						TestTargetID = 27845B6C2D81EBB1007FAEF2;
+					};
+				};
+			};
+			buildConfigurationList = 27845B682D81EBB1007FAEF2 /* Build configuration list for PBXProject "FeuerwehrApp" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 27845B642D81EBB1007FAEF2;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 27845B6E2D81EBB1007FAEF2 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				27845B6C2D81EBB1007FAEF2 /* FeuerwehrApp */,
+				27845B7C2D81EBB2007FAEF2 /* FeuerwehrAppTests */,
+				27845B862D81EBB2007FAEF2 /* FeuerwehrAppUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		27845B6B2D81EBB1007FAEF2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		27845B7B2D81EBB2007FAEF2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		27845B852D81EBB2007FAEF2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		27845B692D81EBB1007FAEF2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		27845B792D81EBB2007FAEF2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		27845B832D81EBB2007FAEF2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		27845B7F2D81EBB2007FAEF2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 27845B6C2D81EBB1007FAEF2 /* FeuerwehrApp */;
+			targetProxy = 27845B7E2D81EBB2007FAEF2 /* PBXContainerItemProxy */;
+		};
+		27845B892D81EBB2007FAEF2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 27845B6C2D81EBB1007FAEF2 /* FeuerwehrApp */;
+			targetProxy = 27845B882D81EBB2007FAEF2 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		27845B8F2D81EBB2007FAEF2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = C245V938Q9;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		27845B902D81EBB2007FAEF2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = C245V938Q9;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		27845B922D81EBB2007FAEF2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"FeuerwehrApp/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FeuerwehrApp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = FeuerwehrApp;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Die App benötigt Kamerazugriff, um Fotos für Notizen aufzunehmen.";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Wir benötigen Ihren Standort, um die Karte anzuzeigen.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Wir benötigen Ihren Standort, um die Karte anzuzeigen.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ffkalefeld.feuerwehrapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "FeuerwehrApp/FeuerwehrApp-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		27845B932D81EBB2007FAEF2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"FeuerwehrApp/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FeuerwehrApp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = FeuerwehrApp;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Die App benötigt Kamerazugriff, um Fotos für Notizen aufzunehmen.";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Wir benötigen Ihren Standort, um die Karte anzuzeigen.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Wir benötigen Ihren Standort, um die Karte anzuzeigen.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ffkalefeld.feuerwehrapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "FeuerwehrApp/FeuerwehrApp-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		27845B952D81EBB2007FAEF2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = FeuerwehrApps.FeuerwehrAppTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FeuerwehrApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/FeuerwehrApp";
+			};
+			name = Debug;
+		};
+		27845B962D81EBB2007FAEF2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = FeuerwehrApps.FeuerwehrAppTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FeuerwehrApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/FeuerwehrApp";
+			};
+			name = Release;
+		};
+		27845B982D81EBB2007FAEF2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = FeuerwehrApps.FeuerwehrAppUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = FeuerwehrApp;
+			};
+			name = Debug;
+		};
+		27845B992D81EBB2007FAEF2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = FeuerwehrApps.FeuerwehrAppUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = FeuerwehrApp;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		27845B682D81EBB1007FAEF2 /* Build configuration list for PBXProject "FeuerwehrApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				27845B8F2D81EBB2007FAEF2 /* Debug */,
+				27845B902D81EBB2007FAEF2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		27845B912D81EBB2007FAEF2 /* Build configuration list for PBXNativeTarget "FeuerwehrApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				27845B922D81EBB2007FAEF2 /* Debug */,
+				27845B932D81EBB2007FAEF2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		27845B942D81EBB2007FAEF2 /* Build configuration list for PBXNativeTarget "FeuerwehrAppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				27845B952D81EBB2007FAEF2 /* Debug */,
+				27845B962D81EBB2007FAEF2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		27845B972D81EBB2007FAEF2 /* Build configuration list for PBXNativeTarget "FeuerwehrAppUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				27845B982D81EBB2007FAEF2 /* Debug */,
+				27845B992D81EBB2007FAEF2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 27845B652D81EBB1007FAEF2 /* Project object */;
+}
