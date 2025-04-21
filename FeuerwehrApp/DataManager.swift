@@ -25,8 +25,8 @@ class DataManager {
         
         let standardFeuerwehren = [
             Feuerwehr(
-                name: "Feuerwehr Düderode",
-                ort: "Düderode",
+                name: "Feuerwehr Beispieldorf",
+                ort: "Beispieldorf",
                 gruppe: .ortsfeuerwehr,
                 fahrzeuge: [
                     Fahrzeug(
@@ -40,29 +40,6 @@ class DataManager {
                     Fahrzeug(
                         typ: "MTW",
                         funkrufname: "12-42-19",
-                        standardBesatzung: 9,
-                        besatzung: 9,
-                        standardAgtTraeger: 0,
-                        agtTraeger: 0
-                    )
-                ]
-            ),
-            Feuerwehr(
-                name: "Feuerwehr Ackenhausen",
-                ort: "Ackenhausen",
-                gruppe: .bereitschaft,
-                fahrzeuge: [
-                    Fahrzeug(
-                        typ: "TSF",
-                        funkrufname: "12-45-30",
-                        standardBesatzung: 6,
-                        besatzung: 6,
-                        standardAgtTraeger: 0,
-                        agtTraeger: 0
-                    ),
-                    Fahrzeug(
-                        typ: "MTW",
-                        funkrufname: "12-45-33",
                         standardBesatzung: 9,
                         besatzung: 9,
                         standardAgtTraeger: 0,
