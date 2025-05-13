@@ -4,6 +4,8 @@ import SwiftUI
 // FeuerwehrListeView.swift
 struct FeuerwehrListeView: View {
     @Binding var feuerwehren: [Feuerwehr]
+    @State private var navigationPath = NavigationPath()
+    @State private var showSafariView = false
     
     var body: some View {
         List {
@@ -40,6 +42,27 @@ struct FeuerwehrListeView: View {
                     deleteFeuerwehr(at: offsets, gruppe: .bereitschaft)
                 }
             }
+            // Spenden-Section
+            /*Section {
+                                Button(action: {
+                                    showSafariView = true
+                                }) {
+                                    HStack {
+                                        Image(systemName: "heart.fill")
+                                            .foregroundColor(.red)
+                                        Text("Spenden für die Feuerwehr")
+                                            .foregroundColor(.primary)
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .foregroundColor(.gray)
+                                    }
+                                }
+                                .sheet(isPresented: $showSafariView) {
+                                    if let url = URL(string: "https://paypal.me/ffoldenrode") {
+                                        SafariView(url: url)
+                                    }
+                                }
+                            }*/
         }
         .navigationTitle("Alle Feuerwehren")
         .toolbar {
@@ -105,4 +128,16 @@ struct FeuerwehrDetailView: View {
     private func deleteFahrzeug(at offsets: IndexSet) {
         feuerwehr.fahrzeuge.remove(atOffsets: offsets)
     }
+}
+
+// SafariView für die Web-Anzeige
+import SafariServices
+struct SafariView: UIViewControllerRepresentable {
+    let url: URL
+    
+    func makeUIViewController(context: UIViewControllerRepresentableContext<SafariView>) -> SFSafariViewController {
+        return SFSafariViewController(url: url)
+    }
+    
+    func updateUIViewController(_ uiViewController: SFSafariViewController, context: UIViewControllerRepresentableContext<SafariView>) {}
 }
