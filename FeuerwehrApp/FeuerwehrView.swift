@@ -17,7 +17,7 @@ struct FeuerwehrView: View {
                             selectedFeuerwehren: $selectedFeuerwehren,
                             showEingabeMaske: $showEingabeMaske
                         )
-                        .navigationTitle("Feuerwehr-App")
+                        .navigationTitle("FeuerwehrApp")
                         .navigationDestination(isPresented: .constant(!selectedFeuerwehren.isEmpty)) {
                             FeuerwehrAnzeigeView(
                                 feuerwehren: $feuerwehren,
@@ -33,7 +33,7 @@ struct FeuerwehrView: View {
                             selectedFeuerwehren: $selectedFeuerwehren,
                             showEingabeMaske: $showEingabeMaske
                         )
-                        .navigationTitle("Feuerwehr-App")
+                        .navigationTitle("FeuerwehrApp")
                     } detail: {
                         FeuerwehrAnzeigeView(
                             feuerwehren: $feuerwehren,
