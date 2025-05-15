@@ -86,6 +86,18 @@ struct FeuerwehrKarteView: View {
                             .shadow(radius: 3)
                     }
                     
+                    Button(action: {
+                        viewModel.undoLastAnnotation(for: selectedStrecke)
+                    }) {
+                        Image(systemName: "arrow.uturn.backward")
+                            .font(.system(size: 20))
+                            .frame(width: 44, height: 44)
+                            .background(Color.white.opacity(0.9))
+                            .foregroundColor(.orange)
+                            .clipShape(Circle())
+                            .shadow(radius: 3)
+                    }
+                    
                     Button(action: toggleUserTracking) {
                         Image(systemName: trackingMode == .followWithHeading ? "location.north.line.fill" :
                               trackingMode == .follow ? "location.fill" : "location")
@@ -215,7 +227,7 @@ struct FeuerwehrKarteView: View {
 }
 // Korrigierte HilfePopupView
 struct HilfePopupView: View {
-    @Environment(\.dismiss) var dismiss // Neu: Korrekte Verwendung des Dismiss-Handlers
+    @Environment(\.dismiss) var dismiss
     
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -227,18 +239,21 @@ struct HilfePopupView: View {
                 InfoStepView(icon: "1.circle", text: "Wählen Sie eine Förderstrecke (1 oder 2) aus.")
                 InfoStepView(icon: "hand.tap.fill", text: "Langer Druck auf die Karte setzt Wegpunkte.")
                 InfoStepView(icon: "arrow.right", text: "Reihenfolge laut Wasserförderstrecke-Tab:")
+                
                 VStack(alignment: .leading, spacing: 5) {
                     Text("1. Wasserentnahmestelle")
                     Text("2. Förderfahrzeuge")
                     Text("3. Einsatzstelle")
                 }
                 .padding(.leading, 30)
+                
+                InfoStepView(icon: "arrow.uturn.backward", text: "Mit dem Zurück-Button wird der zuletzt gesetzte Punkt entfernt.")
                 InfoStepView(icon: "trash.fill", text: "Reset-Button löscht alle Punkte der aktuellen Strecke.")
                 InfoStepView(icon: "eye.fill", text: "Die automatisch berechnete Route lässt sich ein- und ausblenden.")
             }
             
             Button("Verstanden") {
-                dismiss() // Korrektes Schließen des Sheets
+                dismiss()
             }
             .frame(maxWidth: .infinity)
             .padding()
@@ -252,6 +267,7 @@ struct HilfePopupView: View {
         .presentationDragIndicator(.visible)
     }
 }
+
 
 // Hilfs-View für einheitliche Schritt-Darstellung
 struct InfoStepView: View {
