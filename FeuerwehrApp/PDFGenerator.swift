@@ -362,7 +362,8 @@ struct PDFGenerator {
 extension PDFGenerator {
     static func generateFeuerwehrUebersichtPDF(
         feuerwehren: [Feuerwehr],
-        selectedFeuerwehren: Set<UUID>
+        selectedFeuerwehren: Set<UUID>,
+        includeInactiveVehicles: Bool = false
     ) -> URL? {
         let renderer = UIGraphicsPDFRenderer(bounds: CGRect(x: 0, y: 0, width: 612, height: 792))
         
@@ -371,8 +372,17 @@ extension PDFGenerator {
         let datum = dateFormatter.string(from: Date())
         
         let filteredFeuerwehren = feuerwehren.filter { selectedFeuerwehren.contains($0.id) }
-        let gesamtBesatzung = filteredFeuerwehren.flatMap { $0.fahrzeuge.filter { $0.isSelected } }.reduce(0) { $0 + $1.besatzung }
-        let gesamtAGT = filteredFeuerwehren.flatMap { $0.fahrzeuge.filter { $0.isSelected } }.reduce(0) { $0 + $1.agtTraeger }
+        
+        // Berechnung der Gesamtkräfte unter Berücksichtigung der includeInactiveVehicles Option
+        let gesamtBesatzung = filteredFeuerwehren
+            .flatMap { $0.fahrzeuge }
+            .filter { includeInactiveVehicles || $0.isSelected }
+            .reduce(0) { $0 + $1.besatzung }
+        
+        let gesamtAGT = filteredFeuerwehren
+            .flatMap { $0.fahrzeuge }
+            .filter { includeInactiveVehicles || $0.isSelected }
+            .reduce(0) { $0 + $1.agtTraeger }
         
         let pdfData = renderer.pdfData { context in
             var yPosition: CGFloat = 50
@@ -381,16 +391,26 @@ extension PDFGenerator {
             context.beginPage()
             drawHeader(title: "Feuerwehr-Übersicht", datum: datum, yPosition: &yPosition)
             
-            // Gesamtinformationen
+            // Gesamtinformationen mit Hinweis zur Berechnung
             drawText(text: "Gesamtbesatzung: \(gesamtBesatzung)", x: 50, y: yPosition, font: .boldSystemFont(ofSize: 16))
             yPosition += 25
             drawText(text: "Gesamt-AGT-Träger: \(gesamtAGT)", x: 50, y: yPosition, font: .boldSystemFont(ofSize: 16))
+            yPosition += 20
+            
+            // Hinweis zur Berechnungsgrundlage
+            let berechnungHinweis = includeInactiveVehicles
+                ? "Berechnung inkl. aller Fahrzeuge"
+                : "Berechnung nur aktiver Fahrzeuge"
+            drawText(text: berechnungHinweis, x: 50, y: yPosition, font: .italicSystemFont(ofSize: 12), color: .gray)
             yPosition += 40
             
             // Detailinformationen pro Feuerwehr
             for feuerwehr in filteredFeuerwehren {
-                let selectedFahrzeuge = feuerwehr.fahrzeuge.filter { $0.isSelected }
-                if selectedFahrzeuge.isEmpty { continue }
+                let fahrzeugeToShow = includeInactiveVehicles
+                    ? feuerwehr.fahrzeuge
+                    : feuerwehr.fahrzeuge.filter { $0.isSelected }
+                
+                if fahrzeugeToShow.isEmpty { continue }
                 
                 // Prüfen ob neue Seite benötigt wird
                 if yPosition > 650 {
@@ -403,9 +423,15 @@ extension PDFGenerator {
                 drawText(text: "\(feuerwehr.name) - \(feuerwehr.ort)", x: 50, y: yPosition, font: .boldSystemFont(ofSize: 14), color: .blue)
                 yPosition += 20
                 
-                // Fahrzeugliste
-                for fahrzeug in selectedFahrzeuge {
-                    drawText(text: "• \(fahrzeug.typ) (\(fahrzeug.funkrufname))", x: 60, y: yPosition)
+                // Fahrzeugliste mit Status-Anzeige
+                for fahrzeug in fahrzeugeToShow {
+                    let statusSymbol = fahrzeug.isSelected ? "✓" : "✗"
+                    let statusColor = fahrzeug.isSelected ? UIColor.green : UIColor.red
+                    
+                    drawText(text: "\(statusSymbol) \(fahrzeug.typ) (\(fahrzeug.funkrufname))",
+                            x: 60, y: yPosition,
+                            font: .systemFont(ofSize: 12),
+                            color: statusColor)
                     yPosition += 20
                     
                     drawText(text: "  Besatzung: \(fahrzeug.besatzung)", x: 80, y: yPosition)

@@ -4,6 +4,7 @@ struct FeuerwehrAnzeigeView: View {
     @Binding var feuerwehren: [Feuerwehr]
     @Binding var selectedFeuerwehren: Set<UUID>
     @State private var pdfURL: IdentifiableURL?
+    @State private var includeAllVehicles = false
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -12,7 +13,7 @@ struct FeuerwehrAnzeigeView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     // Platzhalter für die Höhe des fixierten Headers
                     Spacer()
-                        .frame(height: 20) // Höhe anpassen falls nötig
+                        .frame(height: 5) // Höher wegen zusätzlichem Toggle im Header
                     
                     if selectedFeuerwehren.isEmpty {
                         // Platzhalter-Text wenn keine Auswahl
@@ -44,7 +45,8 @@ struct FeuerwehrAnzeigeView: View {
                         Button("PDF erstellen und teilen") {
                             if let url = PDFGenerator.generateFeuerwehrUebersichtPDF(
                                 feuerwehren: feuerwehren,
-                                selectedFeuerwehren: selectedFeuerwehren
+                                selectedFeuerwehren: selectedFeuerwehren,
+                                includeInactiveVehicles: includeAllVehicles // Hier den Toggle-State übergeben
                             ) {
                                 pdfURL = IdentifiableURL(url: url)
                             }
@@ -60,17 +62,27 @@ struct FeuerwehrAnzeigeView: View {
                     }
                 }
                 .padding()
-                .padding(.top, 60) // Oberer Padding für fixierten Header
+                .padding(.top, 120) // Mehr Padding oben wegen größerem Header
             }
             
-            // Fixierter Header
+            // Fixierter Header mit Toggle
             if !selectedFeuerwehren.isEmpty {
-                HStack {
-                    Text("Gesamtbesatzung: \(gesamtBesatzungBerechnen())")
-                    Spacer()
-                    Text("Gesamt-AGT: \(gesamtAGTBerechnen())")
+                VStack(spacing: 8) {
+                    HStack {
+                        Text("Gesamtbesatzung: \(gesamtBesatzungBerechnen())")
+                        Spacer()
+                        Text("Gesamt-AGT: \(gesamtAGTBerechnen())")
+                    }
+                    .font(.headline)
+                    
+                    HStack {
+                        Toggle(isOn: $includeAllVehicles) {
+                            Text(includeAllVehicles ? "Alle Fahrzeuge einbeziehen" : "Nur aktivierte Fahrzeuge einbeziehen")
+                                .font(.subheadline)
+                        }
+                        .toggleStyle(SwitchToggleStyle(tint: .blue))
+                    }
                 }
-                .font(.headline)
                 .padding()
                 .frame(maxWidth: .infinity)
                 .background(Color(.systemBackground))
@@ -80,23 +92,25 @@ struct FeuerwehrAnzeigeView: View {
     }
     
     private func binding(for feuerwehr: Feuerwehr) -> Binding<Feuerwehr> {
-        guard let index = feuerwehren.firstIndex(where: { $0.id == feuerwehr.id }) else {
-            fatalError("Feuerwehr nicht gefunden")
+            guard let index = feuerwehren.firstIndex(where: { $0.id == feuerwehr.id }) else {
+                fatalError("Feuerwehr nicht gefunden")
+            }
+            return $feuerwehren[index]
         }
-        return $feuerwehren[index]
-    }
-    
-    private func gesamtBesatzungBerechnen() -> Int {
-        return feuerwehren
-            .filter { selectedFeuerwehren.contains($0.id) }
-            .flatMap { $0.fahrzeuge.filter { $0.isSelected } }
-            .reduce(0) { $0 + $1.besatzung }
-    }
-    
-    private func gesamtAGTBerechnen() -> Int {
-        return feuerwehren
-            .filter { selectedFeuerwehren.contains($0.id) }
-            .flatMap { $0.fahrzeuge.filter { $0.isSelected } }
-            .reduce(0) { $0 + $1.agtTraeger }
-    }
+        
+        private func gesamtBesatzungBerechnen() -> Int {
+            return feuerwehren
+                .filter { selectedFeuerwehren.contains($0.id) }
+                .flatMap { $0.fahrzeuge }
+                .filter { includeAllVehicles || $0.isSelected }
+                .reduce(0) { $0 + $1.besatzung }
+        }
+        
+        private func gesamtAGTBerechnen() -> Int {
+            return feuerwehren
+                .filter { selectedFeuerwehren.contains($0.id) }
+                .flatMap { $0.fahrzeuge }
+                .filter { includeAllVehicles || $0.isSelected }
+                .reduce(0) { $0 + $1.agtTraeger }
+        }
 }

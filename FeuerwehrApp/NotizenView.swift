@@ -102,39 +102,42 @@ struct NotizenView: View {
                     .padding(.horizontal)
                     .foregroundColor(.blue)
                     
-                    // Umschaltbutton zwischen Text und Freihand
-                    Button(action: toggleDrawingMode) {
-                        Label(isDrawingMode ? "Textmodus" : "Freihandmodus",
-                              systemImage: isDrawingMode ? "keyboard" : "pencil.tip")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.blue.opacity(0.1))
-                            .cornerRadius(10)
-                    }
-                    .padding(.horizontal)
-                    .foregroundColor(.blue)
-                    
-                    // Notizbereich
-                    VStack(alignment: .leading) {
-                        Text("Notiz")
-                            .font(.headline)
-                            .padding(.horizontal)
-                        
-                        if isDrawingMode {
-                            drawingView
-                        } else {
-                            TextEditor(text: $notizText)
-                                .frame(height: 150)
-                                .padding()
-                                .background(Color.gray.opacity(0.1))
-                                .cornerRadius(12)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                                )
-                                .padding(.horizontal)
-                        }
-                    }
+                    // Umschaltbutton nur auf iPad
+                    // Umschaltbutton NUR auf iPad
+                    if DeviceHelper.isiPad {
+                                        Button(action: toggleDrawingMode) {
+                                            Label(isDrawingMode ? "Textmodus" : "Freihandmodus",
+                                                  systemImage: isDrawingMode ? "keyboard" : "pencil.tip")
+                                                .frame(maxWidth: .infinity)
+                                                .padding()
+                                                .background(Color.blue.opacity(0.1))
+                                                .cornerRadius(10)
+                                        }
+                                        .padding(.horizontal)
+                                        .foregroundColor(.blue)
+                                    }
+                                    
+                                    // Notizbereich
+                                    VStack(alignment: .leading) {
+                                        Text("Notiz")
+                                            .font(.headline)
+                                            .padding(.horizontal)
+                                        
+                                        if DeviceHelper.isiPhone || !isDrawingMode {
+                                            TextEditor(text: $notizText)
+                                                .frame(height: 150)
+                                                .padding()
+                                                .background(Color.gray.opacity(0.1))
+                                                .cornerRadius(12)
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 12)
+                                                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                                )
+                                                .padding(.horizontal)
+                                        } else {
+                                            drawingView
+                                        }
+                                    }
                     
                     // Aktionsbuttons
                     actionButtons
@@ -177,7 +180,9 @@ struct NotizenView: View {
             }
             .onAppear {
                 loadNotes()
-                toolPicker.addObserver(canvasView)
+                if !DeviceHelper.isiPhone {
+                    toolPicker.addObserver(canvasView)
+                }
             }
         }
     }
@@ -347,7 +352,7 @@ struct NotizenView: View {
     // MARK: - Computed Properties
     
     private var saveButtonDisabled: Bool {
-        notizText.isEmpty && canvasView.drawing.strokes.isEmpty
+        DeviceHelper.isiPhone ? notizText.isEmpty : (notizText.isEmpty && canvasView.drawing.strokes.isEmpty)
     }
     
     // MARK: - Functions
@@ -394,7 +399,9 @@ struct NotizenView: View {
         if let drawingData = note.drawingData,
            let drawing = try? PKDrawing(data: drawingData) {
             canvasView.drawing = drawing
-            isDrawingMode = true
+            if !DeviceHelper.isiPhone {
+                isDrawingMode = true
+            }
         } else {
             canvasView.drawing = PKDrawing()
             isDrawingMode = false
@@ -431,20 +438,7 @@ struct NotizenView: View {
     }
 }
 
-struct DrawingView: UIViewRepresentable {
-    let drawing: PKDrawing
-    
-    func makeUIView(context: Context) -> PKCanvasView {
-        let canvasView = PKCanvasView()
-        canvasView.drawing = drawing
-        canvasView.isUserInteractionEnabled = false
-        return canvasView
-    }
-    
-    func updateUIView(_ uiView: PKCanvasView, context: Context) {
-        uiView.drawing = drawing
-    }
-}
+// MARK: - Hilfsstrukturen
 
 struct PencilKitView: UIViewRepresentable {
     @Binding var canvasView: PKCanvasView
@@ -452,7 +446,7 @@ struct PencilKitView: UIViewRepresentable {
     @Binding var isFullscreen: Bool
     
     func makeUIView(context: Context) -> PKCanvasView {
-        canvasView.drawingPolicy = .pencilOnly // Nur Stifteingabe erlauben
+        canvasView.drawingPolicy = .pencilOnly
         canvasView.tool = PKInkingTool(.pen, color: .black, width: 10)
         canvasView.isScrollEnabled = true
         canvasView.minimumZoomScale = 1.0
@@ -480,9 +474,21 @@ struct PencilKitView: UIViewRepresentable {
     }
 }
 
-// ... [restliche bestehende Strukturen] ...
+struct DrawingView: UIViewRepresentable {
+    let drawing: PKDrawing
+    
+    func makeUIView(context: Context) -> PKCanvasView {
+        let canvasView = PKCanvasView()
+        canvasView.drawing = drawing
+        canvasView.isUserInteractionEnabled = false
+        return canvasView
+    }
+    
+    func updateUIView(_ uiView: PKCanvasView, context: Context) {
+        uiView.drawing = drawing
+    }
+}
 
-// Note-Struktur mit Zeichnungsdaten
 struct Note: Identifiable, Codable {
     let id: UUID
     let text: String

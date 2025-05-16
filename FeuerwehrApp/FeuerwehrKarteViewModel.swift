@@ -263,5 +263,47 @@ class FeuerwehrKarteViewModel: ObservableObject {
             self.saveState()
         }
     }
+    
+    private func snapToRoutingPoint(from coordinate: CLLocationCoordinate2D) async -> CLLocationCoordinate2D {
+        let testDestination = CLLocationCoordinate2D(latitude: 51.0, longitude: 10.0)
+
+        func isRoutable(_ coord: CLLocationCoordinate2D) async -> Bool {
+            let request = MKDirections.Request()
+            request.source = MKMapItem(placemark: MKPlacemark(coordinate: coord))
+            request.destination = MKMapItem(placemark: MKPlacemark(coordinate: testDestination))
+            request.transportType = .walking
+
+            let directions = MKDirections(request: request)
+            do {
+                let response = try await directions.calculate()
+                return response.routes.first != nil
+            } catch {
+                return false
+            }
+        }
+
+        if await isRoutable(coordinate) {
+            return coordinate
+        }
+
+        let offsets: [(Double, Double)] = [
+            (0.0001, 0.0), (-0.0001, 0.0),
+            (0.0, 0.0001), (0.0, -0.0001),
+            (0.0001, 0.0001), (-0.0001, -0.0001)
+        ]
+
+        for (latOffset, lonOffset) in offsets {
+            let nearby = CLLocationCoordinate2D(
+                latitude: coordinate.latitude + latOffset,
+                longitude: coordinate.longitude + lonOffset
+            )
+            if await isRoutable(nearby) {
+                return nearby
+            }
+        }
+
+        return coordinate
+    }
+
 
 }
