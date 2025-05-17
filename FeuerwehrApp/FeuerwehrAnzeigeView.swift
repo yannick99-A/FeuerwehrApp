@@ -4,7 +4,7 @@ struct FeuerwehrAnzeigeView: View {
     @Binding var feuerwehren: [Feuerwehr]
     @Binding var selectedFeuerwehren: Set<UUID>
     @State private var pdfURL: IdentifiableURL?
-    @State private var includeAllVehicles = false
+    @State private var includeAllVehicles = true
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -26,7 +26,7 @@ struct FeuerwehrAnzeigeView: View {
                                 .font(.title2)
                                 .bold()
                             
-                            Text("Wählen Sie Feuerwehren in der Sidebar aus oder fügen Sie neue hinzu.")
+                            Text("Wähle Feuerwehren in der Sidebar aus oder fügen neue hinzu.")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                                 .multilineTextAlignment(.center)

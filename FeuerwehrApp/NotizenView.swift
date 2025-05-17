@@ -505,8 +505,6 @@ struct Note: Identifiable, Codable {
     }
 }
 
-// Die restlichen Strukturen (ImagePicker, PhotoPicker, FullScreenImageView, CameraView) bleiben unverändert
-
 struct ImagePicker: UIViewControllerRepresentable {
     var sourceType: UIImagePickerController.SourceType
     var completion: (UIImage?) -> Void
@@ -669,7 +667,6 @@ struct CameraView: UIViewControllerRepresentable {
     }
 }
 
-// In der AppDelegate oder SceneDelegate (wichtig für Berechtigungen):
 func checkCameraPermissions() {
     switch AVCaptureDevice.authorizationStatus(for: .video) {
     case .authorized: break

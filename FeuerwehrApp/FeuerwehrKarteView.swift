@@ -236,7 +236,7 @@ struct HilfePopupView: View {
                 .padding(.top)
             
             VStack(alignment: .leading, spacing: 10) {
-                InfoStepView(icon: "1.circle", text: "Wählen Sie eine Förderstrecke (1 oder 2) aus.")
+                InfoStepView(icon: "1.circle", text: "Wähle eine Förderstrecke (1 oder 2) aus.")
                 InfoStepView(icon: "hand.tap.fill", text: "Langer Druck auf die Karte setzt Wegpunkte.")
                 InfoStepView(icon: "arrow.right", text: "Reihenfolge laut Wasserförderstrecke-Tab:")
                 
@@ -248,7 +248,7 @@ struct HilfePopupView: View {
                 .padding(.leading, 30)
                 
                 InfoStepView(icon: "arrow.uturn.backward", text: "Mit dem Zurück-Button wird der zuletzt gesetzte Punkt entfernt.")
-                InfoStepView(icon: "trash.fill", text: "Reset-Button löscht alle Punkte der aktuellen Strecke.")
+                InfoStepView(icon: "arrow.clockwise", text: "Reset-Button löscht alle Punkte der aktuellen Strecke.")
                 InfoStepView(icon: "eye.fill", text: "Die automatisch berechnete Route lässt sich ein- und ausblenden.")
             }
             

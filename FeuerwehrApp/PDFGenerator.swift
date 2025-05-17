@@ -358,7 +358,6 @@ struct PDFGenerator {
     
 }
 
-// PDFGenerator.swift
 extension PDFGenerator {
     static func generateFeuerwehrUebersichtPDF(
         feuerwehren: [Feuerwehr],
@@ -400,7 +399,7 @@ extension PDFGenerator {
             // Hinweis zur Berechnungsgrundlage
             let berechnungHinweis = includeInactiveVehicles
                 ? "Berechnung inkl. aller Fahrzeuge"
-                : "Berechnung nur aktiver Fahrzeuge"
+                : "Berechnung nur aktiver Fahrzeuge in der Wasserförderstrecke"
             drawText(text: berechnungHinweis, x: 50, y: yPosition, font: .italicSystemFont(ofSize: 12), color: .gray)
             yPosition += 40
             
@@ -425,13 +424,12 @@ extension PDFGenerator {
                 
                 // Fahrzeugliste mit Status-Anzeige
                 for fahrzeug in fahrzeugeToShow {
-                    let statusSymbol = fahrzeug.isSelected ? "✓" : "✗"
-                    let statusColor = fahrzeug.isSelected ? UIColor.green : UIColor.red
+                    //let statusSymbol = fahrzeug.isSelected ? "✓" : "✗"
+                    //let statusColor = fahrzeug.isSelected ? UIColor.green : UIColor.red
                     
-                    drawText(text: "\(statusSymbol) \(fahrzeug.typ) (\(fahrzeug.funkrufname))",
+                    drawText(text: "\(fahrzeug.typ) (\(fahrzeug.funkrufname))",
                             x: 60, y: yPosition,
-                            font: .systemFont(ofSize: 12),
-                            color: statusColor)
+                            font: .systemFont(ofSize: 12))
                     yPosition += 20
                     
                     drawText(text: "  Besatzung: \(fahrzeug.besatzung)", x: 80, y: yPosition)

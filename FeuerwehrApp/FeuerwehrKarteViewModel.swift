@@ -1,6 +1,7 @@
 import SwiftUI
 import MapKit
 import CoreLocation
+import UIKit
 
 extension MKPolyline {
     var coordinates: [CLLocationCoordinate2D] {
@@ -118,15 +119,26 @@ class FeuerwehrKarteViewModel: ObservableObject {
                     : "\(fahrzeug.feuerwehrName) - \(fahrzeug.fahrzeug.typ) (\(fahrzeug.fahrzeug.funkrufname))"
                 annotationsStrecke1.append(annotation)
                 currentFahrzeugIndexStrecke1 += 1
-            } else {
+            } else if currentFahrzeugIndexStrecke1 == fahrzeugeForStrecke1.count {
                 let annotation = IdentifiablePointAnnotation()
                 annotation.coordinate = coordinate
                 annotation.title = "Einsatzstelle"
                 annotationsStrecke1.append(annotation)
                 currentFahrzeugIndexStrecke1 += 1
+            } else {
+                // Haptisches Feedback bei ungültigem Punkt
+                let generator = UINotificationFeedbackGenerator()
+                generator.notificationOccurred(.warning)
+                print("Es wurde bereits eine Einsatzstelle gesetzt. Weitere Punkte werden ignoriert.")
             }
-            calculateRoute(for: 1)
-        } else {
+
+
+            Task {
+                await self.calculateRoute(for: 1)
+            }
+        }
+        // Gleicher Aufbau für Strecke 2:
+        else if strecke == 2 {
             if currentFahrzeugIndexStrecke2 < fahrzeugeForStrecke2.count {
                 let fahrzeug = fahrzeugeForStrecke2[currentFahrzeugIndexStrecke2]
                 let annotation = IdentifiablePointAnnotation()
@@ -136,30 +148,49 @@ class FeuerwehrKarteViewModel: ObservableObject {
                     : "\(fahrzeug.feuerwehrName) - \(fahrzeug.fahrzeug.typ) (\(fahrzeug.fahrzeug.funkrufname))"
                 annotationsStrecke2.append(annotation)
                 currentFahrzeugIndexStrecke2 += 1
-            } else {
+            } else if currentFahrzeugIndexStrecke2 == fahrzeugeForStrecke2.count {
                 let annotation = IdentifiablePointAnnotation()
                 annotation.coordinate = coordinate
                 annotation.title = "Einsatzstelle"
                 annotationsStrecke2.append(annotation)
                 currentFahrzeugIndexStrecke2 += 1
+            } else {
+                // Haptisches Feedback bei ungültigem Punkt
+                let generator = UINotificationFeedbackGenerator()
+                generator.notificationOccurred(.warning)
+                print("Es wurde bereits eine Einsatzstelle gesetzt. Weitere Punkte werden ignoriert.")
             }
-            calculateRoute(for: 2)
+
+
+            Task {
+                await self.calculateRoute(for: 2)
+            }
         }
+
         saveState()
     }
+
 
     func undoLastAnnotation(for strecke: Int) {
         if strecke == 1, !annotationsStrecke1.isEmpty {
             annotationsStrecke1.removeLast()
             currentFahrzeugIndexStrecke1 = max(0, currentFahrzeugIndexStrecke1 - 1)
-            calculateRoute(for: 1)
+
+            Task {
+                await self.calculateRoute(for: 1)
+            }
         } else if strecke == 2, !annotationsStrecke2.isEmpty {
             annotationsStrecke2.removeLast()
             currentFahrzeugIndexStrecke2 = max(0, currentFahrzeugIndexStrecke2 - 1)
-            calculateRoute(for: 2)
+
+            Task {
+                await self.calculateRoute(for: 2)
+            }
         }
+
         saveState()
     }
+
 
     func resetAnnotationsAndRoute(for strecke: Int) {
         if strecke == 1 {
@@ -197,70 +228,61 @@ class FeuerwehrKarteViewModel: ObservableObject {
         saveState()
     }
 
+    @MainActor
     private func calculateRoute(for strecke: Int) {
         let annotations = strecke == 1 ? annotationsStrecke1 : annotationsStrecke2
         guard annotations.count >= 2 else {
-            if strecke == 1 {
-                routePolylineStrecke1 = nil
-                routeDistanceStrecke1 = 0
-            } else {
-                routePolylineStrecke2 = nil
-                routeDistanceStrecke2 = 0
-            }
+            clearRoute(for: strecke)
             return
         }
 
-        var allCoordinates: [CLLocationCoordinate2D] = []
-        var totalDistance: CLLocationDistance = 0
-        let dispatchGroup = DispatchGroup()
+        Task {
+            var allCoordinates: [CLLocationCoordinate2D] = []
+            var totalDistance: CLLocationDistance = 0
 
-        for i in 0..<annotations.count - 1 {
-            let start = annotations[i].coordinate
-            let end = annotations[i + 1].coordinate
+            for i in 0..<annotations.count - 1 {
+                let rawStart = annotations[i].coordinate
+                let rawEnd = annotations[i + 1].coordinate
 
-            dispatchGroup.enter()
-            let request = MKDirections.Request()
-            request.source = MKMapItem(placemark: MKPlacemark(coordinate: start))
-            request.destination = MKMapItem(placemark: MKPlacemark(coordinate: end))
-            request.transportType = .walking // oder .automobile
+                let start = await snapToRoutingPoint(from: rawStart)
+                let end = await snapToRoutingPoint(from: rawEnd)
 
-            let directions = MKDirections(request: request)
-            directions.calculate { response, error in
-                defer { dispatchGroup.leave() }
+                let request = MKDirections.Request()
+                request.source = MKMapItem(placemark: MKPlacemark(coordinate: start))
+                request.destination = MKMapItem(placemark: MKPlacemark(coordinate: end))
+                request.transportType = .walking
 
-                if let route = response?.routes.first,
-                   route.distance > 0,
-                   route.polyline.pointCount > 1 {
-                    allCoordinates.append(contentsOf: route.polyline.coordinates)
-                    totalDistance += route.distance
-                } else {
-                    print("❗️ Segment \(i) konnte nicht berechnet werden.")
+                do {
+                    let response = try await MKDirections(request: request).calculate()
+                    if let route = response.routes.first,
+                       route.polyline.pointCount > 1,
+                       route.distance > 10,
+                       route.expectedTravelTime > 5,
+                       route.steps.count > 1 {
+                        allCoordinates.append(contentsOf: route.polyline.coordinates)
+                        totalDistance += route.distance
+                    } else {
+                        print("Ungültige Teilroute (Luftlinie oder zu kurz): \(start) ➝ \(end)")
+                    }
+                } catch {
+                    print("❗️ Routing-Fehler: \(error.localizedDescription)")
                 }
             }
-        }
 
-        dispatchGroup.notify(queue: .main) {
             if allCoordinates.count > 1 {
-                let fullPolyline = MKPolyline(coordinates: allCoordinates, count: allCoordinates.count)
-
+                let polyline = MKPolyline(coordinates: allCoordinates, count: allCoordinates.count)
                 if strecke == 1 {
-                    self.routePolylineStrecke1 = fullPolyline
+                    self.routePolylineStrecke1 = polyline
                     self.routeDistanceStrecke1 = totalDistance
                 } else {
-                    self.routePolylineStrecke2 = fullPolyline
+                    self.routePolylineStrecke2 = polyline
                     self.routeDistanceStrecke2 = totalDistance
                 }
             } else {
-                if strecke == 1 {
-                    self.routePolylineStrecke1 = nil
-                    self.routeDistanceStrecke1 = 0
-                } else {
-                    self.routePolylineStrecke2 = nil
-                    self.routeDistanceStrecke2 = 0
-                }
+                clearRoute(for: strecke)
             }
 
-            self.saveState()
+            saveState()
         }
     }
     
@@ -303,6 +325,16 @@ class FeuerwehrKarteViewModel: ObservableObject {
         }
 
         return coordinate
+    }
+    
+    private func clearRoute(for strecke: Int) {
+        if strecke == 1 {
+            self.routePolylineStrecke1 = nil
+            self.routeDistanceStrecke1 = 0
+        } else {
+            self.routePolylineStrecke2 = nil
+            self.routeDistanceStrecke2 = 0
+        }
     }
 
 
