@@ -28,7 +28,7 @@ struct EinzelneFeuerwehrView: View {
                         HStack {
                             // Linksbündig: Status-Switch
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("Status")
+                                Text("Status in Förderstrecke")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                                 HStack {

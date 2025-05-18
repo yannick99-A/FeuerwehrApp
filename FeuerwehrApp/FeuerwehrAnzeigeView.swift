@@ -77,7 +77,7 @@ struct FeuerwehrAnzeigeView: View {
                     
                     HStack {
                         Toggle(isOn: $includeAllVehicles) {
-                            Text(includeAllVehicles ? "Alle Fahrzeuge einbeziehen" : "Nur aktivierte Fahrzeuge einbeziehen")
+                            Text(includeAllVehicles ? "Inkl. deaktivierter Fahrzeuge" : "Nur aktive Fahrzeuge")
                                 .font(.subheadline)
                         }
                         .toggleStyle(SwitchToggleStyle(tint: .blue))
