@@ -19,6 +19,7 @@ struct ShareSheet: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
+// WasserfoerderstreckeView.swift
 import SwiftUI
 
 struct WasserfoerderstreckeView: View {
@@ -27,6 +28,7 @@ struct WasserfoerderstreckeView: View {
     
     @State private var orderedFahrzeuge1: [(fahrzeug: Fahrzeug, feuerwehrName: String)] = []
     @State private var orderedFahrzeuge2: [(fahrzeug: Fahrzeug, feuerwehrName: String)] = []
+    @State private var espFahrzeug: (fahrzeug: Fahrzeug, feuerwehrName: String)? = nil
     @State private var distances1: [Int] = []
     @State private var distances2: [Int] = []
     @State private var totalDistance1: Int = 0
@@ -35,7 +37,6 @@ struct WasserfoerderstreckeView: View {
     @State private var pdfURL2: IdentifiableURL?
     @State private var funkrufgruppe1: String = ""
     @State private var funkrufgruppe2: String = ""
-    
     
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     
@@ -104,6 +105,7 @@ struct WasserfoerderstreckeView: View {
                 .background(Color(.systemGray5))
                 .cornerRadius(8)
                 .listRowSeparator(.hidden)
+                
                 // Liste der Fahrzeuge
                 ForEach(Array(fahrzeuge.enumerated()), id: \.element.fahrzeug.id) { index, element in
                     FeuerwehrRowView(
@@ -135,6 +137,30 @@ struct WasserfoerderstreckeView: View {
                     calculateTotalDistance()
                 }
                 
+                // Einsatzstellenpumpe falls vorhanden
+                if let esp = espFahrzeug {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("Einsatzstellenpumpe")
+                                .font(.headline)
+                                .foregroundColor(.blue)
+                            Spacer()
+                        }
+                        
+                        FeuerwehrRowView(
+                            fahrzeug: esp.fahrzeug,
+                            feuerwehrName: esp.feuerwehrName,
+                            index: 0,
+                            distance: .constant(0),
+                            showArrow: false
+                        )
+                    }
+                    .padding()
+                    .background(Color(.systemGray5))
+                    .cornerRadius(8)
+                    .listRowSeparator(.hidden)
+                }
+                
                 // Übergabe an Einsatzstelle
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
@@ -156,7 +182,8 @@ struct WasserfoerderstreckeView: View {
                     for: fahrzeuge,
                     distances: distances,
                     foerderstrecke: foerderstrecke,
-                    funkrufgruppe: funkrufgruppe.wrappedValue
+                    funkrufgruppe: funkrufgruppe.wrappedValue,
+                    espFahrzeug: espFahrzeug
                 ) {
                     if foerderstrecke == 1 {
                         pdfURL1 = IdentifiableURL(url: url)
@@ -165,11 +192,11 @@ struct WasserfoerderstreckeView: View {
                     }
                 }
             }
-            .disabled(fahrzeuge.isEmpty)
-            .opacity(fahrzeuge.isEmpty ? 0.6 : 1)
+            .disabled(fahrzeuge.isEmpty && espFahrzeug == nil)
+            .opacity((fahrzeuge.isEmpty && espFahrzeug == nil) ? 0.6 : 1)
             .padding()
             .frame(maxWidth: .infinity)
-            .background(fahrzeuge.isEmpty ? Color.gray : Color.blue)
+            .background((fahrzeuge.isEmpty && espFahrzeug == nil) ? Color.gray : Color.blue)
             .foregroundColor(.white)
             .cornerRadius(10)
             .sheet(item: pdfURL) { identifiableURL in
@@ -185,6 +212,16 @@ struct WasserfoerderstreckeView: View {
         let previousDistances1 = distances1
         let previousDistances2 = distances2
         
+        // Finde die Einsatzstellenpumpe (falls vorhanden)
+        espFahrzeug = feuerwehren
+            .filter { selectedFeuerwehren.contains($0.id) }
+            .flatMap { feuerwehr in
+                feuerwehr.fahrzeuge
+                    .filter { $0.isSelected && $0.foerderstrecke == 3 }
+                    .map { (fahrzeug: $0, feuerwehrName: feuerwehr.name) }
+            }
+            .first
+        
         orderedFahrzeuge1 = feuerwehren
             .filter { selectedFeuerwehren.contains($0.id) }
             .flatMap { feuerwehr in
@@ -192,6 +229,7 @@ struct WasserfoerderstreckeView: View {
                     .filter { $0.isSelected && $0.foerderstrecke == 1 }
                     .map { (fahrzeug: $0, feuerwehrName: feuerwehr.name) }
             }
+        
         orderedFahrzeuge2 = feuerwehren
             .filter { selectedFeuerwehren.contains($0.id) }
             .flatMap { feuerwehr in
