@@ -6,7 +6,8 @@ struct PDFGenerator {
                                       distances: [Int],
                                       foerderstrecke: Int,
                                       funkrufgruppe: String,
-                                      espFahrzeug: (fahrzeug: Fahrzeug, feuerwehrName: String)?) -> URL? {
+                                      espFahrzeug: (fahrzeug: Fahrzeug, feuerwehrName: String)?,
+                                      andereFoerderstreckeFahrzeug: (fahrzeug: Fahrzeug, feuerwehrName: String)?) -> URL? {
         let renderer = UIGraphicsPDFRenderer(bounds: CGRect(x: 0, y: 0, width: 612, height: 792))
         
         let dateFormatter = DateFormatter()
@@ -24,8 +25,8 @@ struct PDFGenerator {
                               funkrufgruppe: funkrufgruppe,
                               datum: datum,
                               yPosition: &yPosition,
-                              highlightedIndex: 1, // Nur Position 1 ist hervorgehoben
-                              espFahrzeug: espFahrzeug)
+                              highlightedIndex: 1,
+                              espFahrzeug: nil)
             
             // 2. Mittlere Seiten
             for index in 1..<fahrzeuge.count {
@@ -39,11 +40,25 @@ struct PDFGenerator {
                              funkrufgruppe: funkrufgruppe,
                              datum: datum,
                              yPosition: &yPosition,
-                             highlightedIndex: index + 1, // Nur die aktuelle Position ist hervorgehoben
+                             highlightedIndex: index + 1,
                              espFahrzeug: espFahrzeug)
             }
             
-            // 3. Zusammenfassungsseite(n)
+            // 3. ESP-Seite falls vorhanden (vor der Zusammenfassung)
+                       if let esp = espFahrzeug {
+                           yPosition = 50
+                           context.beginPage()
+                           drawESPPage(context: context,
+                                     fahrzeuge: fahrzeuge,
+                                     espFahrzeug: esp,
+                                     foerderstrecke: foerderstrecke,
+                                     funkrufgruppe: funkrufgruppe,
+                                     datum: datum,
+                                     yPosition: &yPosition,
+                                     andereFoerderstreckeFahrzeug: andereFoerderstreckeFahrzeug)
+                       }
+            
+            // 4. Zusammenfassungsseite(n)
             drawSummaryPages(context: context,
                            fahrzeuge: fahrzeuge,
                            distances: distances,
@@ -103,24 +118,6 @@ struct PDFGenerator {
                     x: 90, y: yPosition, font: .boldSystemFont(ofSize: 16))
             yPosition += 40
         }
-        
-        // Falls ESP vorhanden, am Ende der Seite anzeigen
-        if let esp = espFahrzeug {
-            yPosition += 20
-            drawText(text: "Einsatzstellenpumpe:", x: 50, y: yPosition, font: .boldSystemFont(ofSize: 14), color: .blue)
-            yPosition += 25
-            
-            drawText(text: "\(esp.feuerwehrName) - \(esp.fahrzeug.typ) (\(esp.fahrzeug.funkrufname))",
-                    x: 70, y: yPosition, font: .boldSystemFont(ofSize: 16))
-            yPosition += 30
-            
-            // Doppelpfeil für ESP
-            drawDoubleArrow(x: 70, y: yPosition)
-            yPosition += 60
-            
-            drawText(text: "Übergabe an Einsatzstelle",
-                    x: 90, y: yPosition, font: .boldSystemFont(ofSize: 16))
-        }
     }
     
     // MARK: - Mittlere Seiten (3 Feuerwehren)
@@ -163,7 +160,7 @@ struct PDFGenerator {
         drawArrowWithDistance(x: 70, y: yPosition, distance: distances[currentIndex])
         yPosition += 80
         
-        // Nächste Feuerwehr oder Einsatzstelle - nicht hervorgehoben
+        // Nächste Feuerwehr oder ESP
         if currentIndex < fahrzeuge.count - 1 {
             drawText(text: "Wasser abgeben an:", x: 50, y: yPosition, font: .systemFont(ofSize: 14))
             yPosition += 25
@@ -171,31 +168,69 @@ struct PDFGenerator {
             drawPosition(index: currentIndex+2, x: 50, y: yPosition, highlight: highlightedIndex == currentIndex+2)
             drawText(text: "\(fahrzeuge[currentIndex+1].feuerwehrName) - \(fahrzeuge[currentIndex+1].fahrzeug.typ) (\(fahrzeuge[currentIndex+1].fahrzeug.funkrufname))",
                     x: 90, y: yPosition, font: .boldSystemFont(ofSize: 16))
-        } else if espFahrzeug == nil {
-            // Nur Einsatzstelle anzeigen, wenn keine ESP vorhanden
-            drawText(text: "Einsatzstelle",
-                    x: 90, y: yPosition, font: .boldSystemFont(ofSize: 16))
-        } else {
-            // ESP anzeigen
+        } else if let esp = espFahrzeug {
             drawText(text: "Wasser abgeben an:", x: 50, y: yPosition, font: .systemFont(ofSize: 14))
             yPosition += 25
             
-            if let esp = espFahrzeug {
-                drawText(text: "Einsatzstellenpumpe: \(esp.feuerwehrName)",
-                        x: 90, y: yPosition, font: .boldSystemFont(ofSize: 16), color: .blue)
-            }
+            drawText(text: "Einsatzstellenpumpe: \(esp.feuerwehrName) - \(esp.fahrzeug.typ) (\(esp.fahrzeug.funkrufname))",
+                    x: 90, y: yPosition, font: .boldSystemFont(ofSize: 16), color: .blue)
+        } else {
+            drawText(text: "Einsatzstelle",
+                    x: 90, y: yPosition, font: .boldSystemFont(ofSize: 16))
+        }
+        yPosition += 40
+    }
+    
+    // MARK: - ESP-Seite
+    private static func drawESPPage(context: UIGraphicsPDFRendererContext,
+                                  fahrzeuge: [(fahrzeug: Fahrzeug, feuerwehrName: String)],
+                                  espFahrzeug: (fahrzeug: Fahrzeug, feuerwehrName: String),
+                                  foerderstrecke: Int,
+                                  funkrufgruppe: String,
+                                  datum: String,
+                                  yPosition: inout CGFloat,
+                                  andereFoerderstreckeFahrzeug: (fahrzeug: Fahrzeug, feuerwehrName: String)?) {
+        // Kopfbereich
+        drawHeader(foerderstrecke: foerderstrecke,
+                  funkrufgruppe: funkrufgruppe,
+                  datum: datum,
+                  yPosition: &yPosition)
+        
+        // ESP Überschrift
+        drawText(text: "EINSATZSTELLENPUMPE", x: 180, y: yPosition, font: .boldSystemFont(ofSize: 24), color: .blue)
+        yPosition += 40
+        
+        // ESP Fahrzeug
+        drawText(text: "\(espFahrzeug.feuerwehrName) - \(espFahrzeug.fahrzeug.typ) (\(espFahrzeug.fahrzeug.funkrufname))",
+                x: 100, y: yPosition, font: .boldSystemFont(ofSize: 20))
+        yPosition += 50
+        
+        // Wasser bekommen von:
+        drawText(text: "Empfängt Wasser von beiden Förderstrecken:", x: 50, y: yPosition, font: .systemFont(ofSize: 14))
+        yPosition += 30
+        
+        // Letzte Fahrzeuge beider Förderstrecken
+        if let letztesFahrzeug1 = fahrzeuge.last {
+            drawText(text: "• Förderstrecke \(foerderstrecke): \(letztesFahrzeug1.feuerwehrName) - \(letztesFahrzeug1.fahrzeug.typ) (\(letztesFahrzeug1.fahrzeug.funkrufname))",
+                    x: 70, y: yPosition, font: .boldSystemFont(ofSize: 16))
+            yPosition += 30
+        }
+        
+        if let andereFahrzeug = andereFoerderstreckeFahrzeug {
+            drawText(text: "• Förderstrecke \(foerderstrecke == 1 ? 2 : 1): \(andereFahrzeug.feuerwehrName) - \(andereFahrzeug.fahrzeug.typ) (\(andereFahrzeug.fahrzeug.funkrufname))",
+                    x: 70, y: yPosition, font: .boldSystemFont(ofSize: 16))
+        } else {
+            drawText(text: "• Förderstrecke \(foerderstrecke == 1 ? 2 : 1): [Keine Daten verfügbar]",
+                    x: 70, y: yPosition, font: .boldSystemFont(ofSize: 16))
         }
         yPosition += 40
         
-        // Falls ESP vorhanden, am Ende der Seite anzeigen
-        if let esp = espFahrzeug, currentIndex == fahrzeuge.count - 1 {
-            yPosition += 20
-            drawDoubleArrow(x: 70, y: yPosition)
-            yPosition += 60
-            
-            drawText(text: "Übergabe an Einsatzstelle",
-                    x: 90, y: yPosition, font: .boldSystemFont(ofSize: 16))
-        }
+        // Pfeil zur Einsatzstelle
+        drawText(text: "↓", x: 70, y: yPosition, font: .systemFont(ofSize: 48))
+        yPosition += 60
+        
+        drawText(text: "Übergabe an Einsatzstelle",
+                x: 90, y: yPosition, font: .boldSystemFont(ofSize: 16))
     }
     
     // MARK: - Hilfsfunktionen
@@ -213,13 +248,11 @@ struct PDFGenerator {
     
     private static func drawPosition(index: Int, x: CGFloat, y: CGFloat, highlight: Bool) {
         if highlight {
-            // Hervorgehobene Position mit Kreis
             let circleSize: CGFloat = 40
             let circleRect = CGRect(x: x, y: y, width: circleSize, height: circleSize)
             let paragraphStyle = NSMutableParagraphStyle()
             paragraphStyle.alignment = .center
             
-            // Kreis zeichnen
             let path = UIBezierPath(ovalIn: circleRect)
             UIColor.blue.setFill()
             path.fill()
@@ -227,7 +260,6 @@ struct PDFGenerator {
             path.lineWidth = 3
             path.stroke()
             
-            // Weißer Text im blauen Kreis
             let attributes: [NSAttributedString.Key: Any] = [
                 .font: UIFont.boldSystemFont(ofSize: 18),
                 .paragraphStyle: paragraphStyle,
@@ -235,7 +267,6 @@ struct PDFGenerator {
             ]
             "\(index)".draw(in: circleRect.insetBy(dx: 0, dy: 9), withAttributes: attributes)
         } else {
-            // Normale Position ohne Kreis (nur Text)
             let attributes: [NSAttributedString.Key: Any] = [
                 .font: UIFont.boldSystemFont(ofSize: 16),
                 .foregroundColor: UIColor.black
@@ -259,7 +290,6 @@ struct PDFGenerator {
             .foregroundColor: highlight ? UIColor.white : UIColor.black
         ]
         
-        // Kreis zeichnen
         let path = UIBezierPath(ovalIn: circleRect)
         (highlight ? UIColor.blue : UIColor.white).setFill()
         path.fill()
@@ -267,19 +297,16 @@ struct PDFGenerator {
         path.lineWidth = lineWidth
         path.stroke()
         
-        // Text im Kreis
         "\(index)".draw(in: circleRect.insetBy(dx: 0, dy: 5), withAttributes: attributes)
     }
     
     private static func drawArrowWithDistance(x: CGFloat, y: CGFloat, distance: Int) {
-        // Großer Pfeil
         let arrowAttributes: [NSAttributedString.Key: Any] = [
             .font: UIFont.systemFont(ofSize: 48),
             .foregroundColor: UIColor.black
         ]
         "↓".draw(at: CGPoint(x: x, y: y), withAttributes: arrowAttributes)
         
-        // Abstandstext mit korrekter Pluralform
         let hoses = distance / 20
         let hoseText = hoses == 1 ? "B-Schlauch" : "B-Schläuche"
         let distanceText = "\(distance) m / \(hoses) \(hoseText)"
@@ -289,22 +316,6 @@ struct PDFGenerator {
             .foregroundColor: UIColor.black
         ]
         distanceText.draw(at: CGPoint(x: x+60, y: y+25), withAttributes: distanceAttributes)
-    }
-    
-    private static func drawDoubleArrow(x: CGFloat, y: CGFloat) {
-        // Doppelpfeil für ESP
-        let arrowAttributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.systemFont(ofSize: 48),
-            .foregroundColor: UIColor.blue
-        ]
-        "⇊".draw(at: CGPoint(x: x, y: y), withAttributes: arrowAttributes)
-        
-        // Beschreibung
-        let textAttributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.boldSystemFont(ofSize: 14),
-            .foregroundColor: UIColor.blue
-        ]
-        "Empfängt beide Förderstrecken".draw(at: CGPoint(x: x+60, y: y+15), withAttributes: textAttributes)
     }
     
     private static func drawText(text: String, x: CGFloat, y: CGFloat,
@@ -324,7 +335,7 @@ struct PDFGenerator {
                                        funkrufgruppe: String,
                                        datum: String,
                                        espFahrzeug: (fahrzeug: Fahrzeug, feuerwehrName: String)?) {
-        let maxEntriesPerPage = 5 // Maximale Einträge pro Seite
+        let maxEntriesPerPage = 5
         var currentPageStart = 0
         var yPosition: CGFloat = 50
         
@@ -332,20 +343,17 @@ struct PDFGenerator {
             context.beginPage()
             yPosition = 50
             
-            // Kopfbereich
             drawHeader(foerderstrecke: foerderstrecke,
                       funkrufgruppe: funkrufgruppe,
                       datum: datum,
                       yPosition: &yPosition)
             
-            // Überschrift
             drawText(text: "ZUSAMMENFASSUNG - Förderstrecke \(foerderstrecke)",
                     x: 50, y: yPosition,
                     font: .boldSystemFont(ofSize: 18),
                     color: .blue)
             yPosition += 30
             
-            // Gesamtstrecke nur auf erster Seite
             if currentPageStart == 0 {
                 let totalDistance = distances.reduce(0, +)
                 let totalHoses = totalDistance / 20
@@ -356,39 +364,32 @@ struct PDFGenerator {
                 yPosition += 40
             }
             
-            // Einträge für aktuelle Seite
             let currentPageEnd = min(currentPageStart + maxEntriesPerPage, fahrzeuge.count)
             for index in currentPageStart..<currentPageEnd {
-                // Feuerwehr-Eintrag
                 drawPositionCircle(index: index+1, x: 50, y: yPosition)
                 drawText(text: "\(fahrzeuge[index].feuerwehrName) - \(fahrzeuge[index].fahrzeug.typ) (\(fahrzeuge[index].fahrzeug.funkrufname))",
                         x: 110, y: yPosition,
                         font: .systemFont(ofSize: 12))
                 yPosition += 40
                 
-                // Pfeil und Abstand oder Übergabe
                 if index < fahrzeuge.count - 1 {
                     drawArrowWithDistance(x: 70, y: yPosition, distance: distances[index])
                     yPosition += 80
-                } else if espFahrzeug == nil {
-                    drawFinalTransferArrow(x: 70, y: yPosition, distance: distances.last ?? 0)
+                } else if let esp = espFahrzeug {
+                    drawText(text: "↓", x: 70, y: yPosition, font: .systemFont(ofSize: 48))
+                    drawText(text: "Einsatzstellenpumpe: \(esp.feuerwehrName) - \(esp.fahrzeug.typ) (\(esp.fahrzeug.funkrufname))",
+                            x: 110, y: yPosition+15, font: .boldSystemFont(ofSize: 14), color: .blue)
+                    yPosition += 60
+                    
+                    drawText(text: "↓", x: 70, y: yPosition, font: .systemFont(ofSize: 48))
+                    drawText(text: "Übergabe an Einsatzstelle",
+                            x: 110, y: yPosition+30, font: .boldSystemFont(ofSize: 14))
                     yPosition += 100
                 } else {
-                    // ESP anzeigen
-                    if let esp = espFahrzeug {
-                        drawText(text: "↓", x: 70, y: yPosition, font: .systemFont(ofSize: 48))
-                        drawText(text: "Einsatzstellenpumpe: \(esp.feuerwehrName)",
-                                x: 110, y: yPosition+15, font: .boldSystemFont(ofSize: 14), color: .blue)
-                        yPosition += 60
-                        
-                        drawDoubleArrow(x: 70, y: yPosition)
-                        drawText(text: "Übergabe an Einsatzstelle",
-                                x: 110, y: yPosition+30, font: .boldSystemFont(ofSize: 14))
-                        yPosition += 100
-                    }
+                    drawFinalTransferArrow(x: 70, y: yPosition, distance: distances.last ?? 0)
+                    yPosition += 100
                 }
                 
-                // Seitenumbruch bei Bedarf
                 if yPosition > 700 && index < currentPageEnd - 1 {
                     yPosition = 50
                     context.beginPage()
@@ -402,14 +403,12 @@ struct PDFGenerator {
     }
 
     private static func drawFinalTransferArrow(x: CGFloat, y: CGFloat, distance: Int) {
-        // Großer Pfeil
         "↓".draw(at: CGPoint(x: x, y: y),
                  withAttributes: [
                     .font: UIFont.systemFont(ofSize: 48),
                     .foregroundColor: UIColor.black
                  ])
         
-        // Abstand mit korrekter Pluralform
         let hoses = distance / 20
         let hoseText = hoses == 1 ? "B-Schlauch" : "B-Schläuche"
         let distanceText = "\(distance) m / \(hoses) \(hoseText)"
@@ -420,7 +419,6 @@ struct PDFGenerator {
                             .foregroundColor: UIColor.black
                          ])
         
-        // Übergabe-Text unter dem Pfeil
         "Übergabe an Einsatzstelle".draw(at: CGPoint(x: x - 10, y: y + 60),
                                         withAttributes: [
                                             .font: UIFont.boldSystemFont(ofSize: 14),
@@ -428,6 +426,7 @@ struct PDFGenerator {
                                         ])
     }
 }
+
 extension PDFGenerator {
     static func generateFeuerwehrUebersichtPDF(
         feuerwehren: [Feuerwehr],
@@ -443,7 +442,6 @@ extension PDFGenerator {
         
         let filteredFeuerwehren = feuerwehren.filter { selectedFeuerwehren.contains($0.id) }
         
-        // Berechnung der Gesamtkräfte
         let gesamtBesatzung = filteredFeuerwehren
             .flatMap { $0.fahrzeuge }
             .filter { includeInactiveVehicles || $0.isSelected }
@@ -457,11 +455,9 @@ extension PDFGenerator {
         let pdfData = renderer.pdfData { context in
             var yPosition: CGFloat = 50
             
-            // Titel-Seite
             context.beginPage()
             drawHeader(title: "Feuerwehr-Übersicht", datum: datum, yPosition: &yPosition)
             
-            // ESP Hinweis falls vorhanden
             if let esp = espFahrzeug {
                 drawText(text: "Einsatzstellenpumpe: \(esp.feuerwehrName) - \(esp.fahrzeug.typ)",
                         x: 50, y: yPosition,
@@ -470,7 +466,6 @@ extension PDFGenerator {
                 yPosition += 30
             }
             
-            // Gesamtinformationen
             drawText(text: "Gesamtbesatzung: \(gesamtBesatzung)",
                     x: 50, y: yPosition,
                     font: .boldSystemFont(ofSize: 16))
@@ -481,7 +476,6 @@ extension PDFGenerator {
                     font: .boldSystemFont(ofSize: 16))
             yPosition += 20
             
-            // Hinweis zur Berechnungsgrundlage
             let berechnungHinweis = includeInactiveVehicles
                 ? "Berechnung inkl. aller Fahrzeuge"
                 : "Berechnung nur aktiver Fahrzeuge"
@@ -491,7 +485,6 @@ extension PDFGenerator {
                     color: .gray)
             yPosition += 40
             
-            // Detailinformationen pro Feuerwehr
             for feuerwehr in filteredFeuerwehren {
                 let fahrzeugeToShow = includeInactiveVehicles
                     ? feuerwehr.fahrzeuge
@@ -499,7 +492,6 @@ extension PDFGenerator {
                 
                 if fahrzeugeToShow.isEmpty { continue }
                 
-                // Seitenumbruch bei Bedarf
                 if yPosition > 650 {
                     context.beginPage()
                     yPosition = 50
@@ -508,14 +500,12 @@ extension PDFGenerator {
                              yPosition: &yPosition)
                 }
                 
-                // Feuerwehr-Header
                 drawText(text: "\(feuerwehr.name) - \(feuerwehr.ort)",
                         x: 50, y: yPosition,
                         font: .boldSystemFont(ofSize: 14),
                         color: .blue)
                 yPosition += 25
                 
-                // Fahrzeugliste
                 for fahrzeug in fahrzeugeToShow {
                     let statusText: String
                     let statusColor: UIColor
@@ -528,21 +518,18 @@ extension PDFGenerator {
                         statusColor = fahrzeug.isSelected ? .systemGreen : .systemRed
                     }
                     
-                    // Fahrzeugname mit Status
                     drawText(text: "\(fahrzeug.typ) (\(fahrzeug.funkrufname)) - \(statusText)",
                             x: 60, y: yPosition,
                             font: .systemFont(ofSize: 12),
                             color: statusColor)
                     yPosition += 20
                     
-                    // Besatzungsdaten
                     drawText(text: "  Besatzung: \(fahrzeug.besatzung)",
                             x: 80, y: yPosition)
                     drawText(text: "  AGT-Träger: \(fahrzeug.agtTraeger)",
                             x: 250, y: yPosition)
                     yPosition += 20
                     
-                    // Förderstrecken-Info für aktive Fahrzeuge
                     if fahrzeug.isSelected && fahrzeug.foerderstrecke != 3 {
                         drawText(text: "  Förderstrecke: \(fahrzeug.foerderstrecke)",
                                 x: 80, y: yPosition,
@@ -556,7 +543,6 @@ extension PDFGenerator {
             }
         }
         
-        // PDF speichern
         if let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
             let pdfURL = documentDirectory.appendingPathComponent("Feuerwehr_Uebersicht.pdf")
             do {
@@ -570,23 +556,18 @@ extension PDFGenerator {
         return nil
     }
     
-    // MARK: - Hilfsfunktionen
-    
     private static func drawHeader(title: String, datum: String, yPosition: inout CGFloat) {
-        // Titel
         drawText(text: title,
                 x: 50, y: yPosition,
                 font: .boldSystemFont(ofSize: 20))
         yPosition += 25
         
-        // Datum
         drawText(text: "Erstellt am: \(datum)",
                 x: 50, y: yPosition,
                 font: .systemFont(ofSize: 12),
                 color: .gray)
         yPosition += 40
         
-        // Trennlinie
         let path = UIBezierPath()
         path.move(to: CGPoint(x: 50, y: yPosition))
         path.addLine(to: CGPoint(x: 562, y: yPosition))

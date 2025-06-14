@@ -177,13 +177,20 @@ struct WasserfoerderstreckeView: View {
             .environment(\.editMode, .constant(.active))
             .frame(minHeight: 400)
             
+            // In der Button-Action, wo der PDF-Generator aufgerufen wird:
             Button("PDF erstellen und teilen (Förderstrecke \(foerderstrecke))") {
+                // Holen wir das Fahrzeug der anderen Förderstrecke
+                let andereFoerderstrecke = foerderstrecke == 1 ? 2 : 1
+                let andereFahrzeuge = andereFoerderstrecke == 1 ? orderedFahrzeuge1 : orderedFahrzeuge2
+                let andereFoerderstreckeFahrzeug = andereFahrzeuge.last
+                
                 if let url = PDFGenerator.generateCombinedPDF(
                     for: fahrzeuge,
                     distances: distances,
                     foerderstrecke: foerderstrecke,
                     funkrufgruppe: funkrufgruppe.wrappedValue,
-                    espFahrzeug: espFahrzeug
+                    espFahrzeug: espFahrzeug,
+                    andereFoerderstreckeFahrzeug: andereFoerderstreckeFahrzeug
                 ) {
                     if foerderstrecke == 1 {
                         pdfURL1 = IdentifiableURL(url: url)
