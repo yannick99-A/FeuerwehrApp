@@ -37,6 +37,7 @@ struct WasserfoerderstreckeView: View {
     @State private var pdfURL2: IdentifiableURL?
     @State private var funkrufgruppe1: String = ""
     @State private var funkrufgruppe2: String = ""
+    @State private var espDistance: Int = 0
     
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     
@@ -84,7 +85,7 @@ struct WasserfoerderstreckeView: View {
         
         VStack {
             // Header mit angepasstem Padding
-            Text("Förderstrecke \(foerderstrecke): \(fahrzeuge.count) Fahrzeuge, Länge: \(totalDistance) m")
+            Text("Förderstrecke \(foerderstrecke): \(fahrzeuge.count) Fahrzeuge, Länge: \(totalDistance) m (\(totalDistance/20) B-Schläuche)")
                 .font(.headline)
                 .padding(.bottom, 5)
                 .padding(.top, 10)
@@ -151,8 +152,8 @@ struct WasserfoerderstreckeView: View {
                             fahrzeug: esp.fahrzeug,
                             feuerwehrName: esp.feuerwehrName,
                             index: 0,
-                            distance: .constant(0),
-                            showArrow: false
+                            distance: $espDistance, // Bindung an den ESP Abstand
+                            showArrow: true
                         )
                     }
                     .padding()
@@ -179,7 +180,6 @@ struct WasserfoerderstreckeView: View {
             
             // In der Button-Action, wo der PDF-Generator aufgerufen wird:
             Button("PDF erstellen und teilen (Förderstrecke \(foerderstrecke))") {
-                // Holen wir das Fahrzeug der anderen Förderstrecke
                 let andereFoerderstrecke = foerderstrecke == 1 ? 2 : 1
                 let andereFahrzeuge = andereFoerderstrecke == 1 ? orderedFahrzeuge1 : orderedFahrzeuge2
                 let andereFoerderstreckeFahrzeug = andereFahrzeuge.last
@@ -190,7 +190,8 @@ struct WasserfoerderstreckeView: View {
                     foerderstrecke: foerderstrecke,
                     funkrufgruppe: funkrufgruppe.wrappedValue,
                     espFahrzeug: espFahrzeug,
-                    andereFoerderstreckeFahrzeug: andereFoerderstreckeFahrzeug
+                    andereFoerderstreckeFahrzeug: andereFoerderstreckeFahrzeug,
+                    espDistance: espDistance
                 ) {
                     if foerderstrecke == 1 {
                         pdfURL1 = IdentifiableURL(url: url)
@@ -255,8 +256,20 @@ struct WasserfoerderstreckeView: View {
         calculateTotalDistance()
     }
     
+    // Neue Berechnung der Gesamtstrecke in WasserfoerderstreckeView
     private func calculateTotalDistance() {
+        // Vorherige Berechnung
         totalDistance1 = distances1.reduce(0, +)
         totalDistance2 = distances2.reduce(0, +)
+        
+        // ESP-Distanz hinzufügen WENN ESP existiert UND Fahrzeuge in der Strecke sind
+        if espFahrzeug != nil {
+            if !orderedFahrzeuge1.isEmpty {
+                totalDistance1 += espDistance
+            }
+            if !orderedFahrzeuge2.isEmpty {
+                totalDistance2 += espDistance
+            }
+        }
     }
 }

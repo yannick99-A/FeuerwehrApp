@@ -2,12 +2,15 @@ import Foundation
 import UIKit
 
 struct PDFGenerator {
-    static func generateCombinedPDF(for fahrzeuge: [(fahrzeug: Fahrzeug, feuerwehrName: String)],
-                                      distances: [Int],
-                                      foerderstrecke: Int,
-                                      funkrufgruppe: String,
-                                      espFahrzeug: (fahrzeug: Fahrzeug, feuerwehrName: String)?,
-                                      andereFoerderstreckeFahrzeug: (fahrzeug: Fahrzeug, feuerwehrName: String)?) -> URL? {
+    static func generateCombinedPDF(
+        for fahrzeuge: [(fahrzeug: Fahrzeug, feuerwehrName: String)],
+        distances: [Int],
+        foerderstrecke: Int,
+        funkrufgruppe: String,
+        espFahrzeug: (fahrzeug: Fahrzeug, feuerwehrName: String)?,
+        andereFoerderstreckeFahrzeug: (fahrzeug: Fahrzeug, feuerwehrName: String)?,
+        espDistance: Int
+    ) -> URL? {
         let renderer = UIGraphicsPDFRenderer(bounds: CGRect(x: 0, y: 0, width: 612, height: 792))
         
         let dateFormatter = DateFormatter()
@@ -65,7 +68,8 @@ struct PDFGenerator {
                            foerderstrecke: foerderstrecke,
                            funkrufgruppe: funkrufgruppe,
                            datum: datum,
-                           espFahrzeug: espFahrzeug)
+                           espFahrzeug: espFahrzeug,
+                           espDistance: espDistance)
         }
         
         if let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
@@ -329,12 +333,13 @@ struct PDFGenerator {
     }
 
     private static func drawSummaryPages(context: UIGraphicsPDFRendererContext,
-                                       fahrzeuge: [(fahrzeug: Fahrzeug, feuerwehrName: String)],
-                                       distances: [Int],
-                                       foerderstrecke: Int,
-                                       funkrufgruppe: String,
-                                       datum: String,
-                                       espFahrzeug: (fahrzeug: Fahrzeug, feuerwehrName: String)?) {
+                                         fahrzeuge: [(fahrzeug: Fahrzeug, feuerwehrName: String)],
+                                                                            distances: [Int],
+                                                                            foerderstrecke: Int,
+                                                                            funkrufgruppe: String,
+                                                                            datum: String,
+                                                                            espFahrzeug: (fahrzeug: Fahrzeug, feuerwehrName: String)?,
+                                                                            espDistance: Int) {
         let maxEntriesPerPage = 5
         var currentPageStart = 0
         var yPosition: CGFloat = 50
@@ -343,59 +348,81 @@ struct PDFGenerator {
             context.beginPage()
             yPosition = 50
             
+            // Kopfbereich
             drawHeader(foerderstrecke: foerderstrecke,
                       funkrufgruppe: funkrufgruppe,
                       datum: datum,
                       yPosition: &yPosition)
             
+            // Überschrift
             drawText(text: "ZUSAMMENFASSUNG - Förderstrecke \(foerderstrecke)",
                     x: 50, y: yPosition,
                     font: .boldSystemFont(ofSize: 18),
                     color: .blue)
             yPosition += 30
             
-            if currentPageStart == 0 {
-                let totalDistance = distances.reduce(0, +)
-                let totalHoses = totalDistance / 20
-                let totalHoseText = totalHoses == 1 ? "B-Schlauch" : "B-Schläuche"
-                drawText(text: "Gesamtlänge: \(totalDistance) Meter (\(totalHoses) \(totalHoseText))",
-                        x: 50, y: yPosition,
-                        font: .boldSystemFont(ofSize: 14))
-                yPosition += 40
-            }
+            // Gesamtberechnung mit ESP-Strecke
+                if currentPageStart == 0 {
+                    var totalDistance = distances.reduce(0, +)
+                    if espFahrzeug != nil {
+                        totalDistance += espDistance
+                    }
+                    let totalHoses = totalDistance / 20
+                    let totalHoseText = totalHoses == 1 ? "B-Schlauch" : "B-Schläuche"
+                    drawText(text: "Gesamtlänge: \(totalDistance) Meter (\(totalHoses) \(totalHoseText))",
+                            x: 50, y: yPosition,
+                            font: .boldSystemFont(ofSize: 14))
+                    yPosition += 40
+                }
             
+            // Einträge für aktuelle Seite
             let currentPageEnd = min(currentPageStart + maxEntriesPerPage, fahrzeuge.count)
             for index in currentPageStart..<currentPageEnd {
+                // Feuerwehr-Eintrag
                 drawPositionCircle(index: index+1, x: 50, y: yPosition)
                 drawText(text: "\(fahrzeuge[index].feuerwehrName) - \(fahrzeuge[index].fahrzeug.typ) (\(fahrzeuge[index].fahrzeug.funkrufname))",
                         x: 110, y: yPosition,
                         font: .systemFont(ofSize: 12))
                 yPosition += 40
                 
+                // Pfeil und Abstand oder Übergabe
                 if index < fahrzeuge.count - 1 {
                     drawArrowWithDistance(x: 70, y: yPosition, distance: distances[index])
                     yPosition += 80
                 } else if let esp = espFahrzeug {
-                    drawText(text: "↓", x: 70, y: yPosition, font: .systemFont(ofSize: 48))
-                    drawText(text: "Einsatzstellenpumpe: \(esp.feuerwehrName) - \(esp.fahrzeug.typ) (\(esp.fahrzeug.funkrufname))",
-                            x: 110, y: yPosition+15, font: .boldSystemFont(ofSize: 14), color: .blue)
-                    yPosition += 60
+                    // Pfeil zur ESP
+                    drawArrowWithDistance(x: 70, y: yPosition, distance: distances[index])
+                    yPosition += 80
                     
-                    drawText(text: "↓", x: 70, y: yPosition, font: .systemFont(ofSize: 48))
+                    // ESP Position (korrekt zentriert)
+                    let espPosition = fahrzeuge.count + 1
+                    drawPositionCircle(index: espPosition, x: 50, y: yPosition, highlight: false) // Kreis wie bei anderen
+                    
+                    drawText(text: "Einsatzstellenpumpe: \(esp.feuerwehrName) - \(esp.fahrzeug.typ) (\(esp.fahrzeug.funkrufname))",
+                            x: 110, y: yPosition,
+                            font: .systemFont(ofSize: 12))
+                    yPosition += 40
+                    
+                    // Pfeil zur Einsatzstelle
+                    drawArrowWithDistance(x: 70, y: yPosition, distance: espDistance)
+                    yPosition += 80
+                    
+                    // Einsatzstelle
                     drawText(text: "Übergabe an Einsatzstelle",
-                            x: 110, y: yPosition+30, font: .boldSystemFont(ofSize: 14))
-                    yPosition += 100
+                            x: 100, y: yPosition,
+                            font: .systemFont(ofSize: 12))
+                    yPosition += 40
                 } else {
                     drawFinalTransferArrow(x: 70, y: yPosition, distance: distances.last ?? 0)
                     yPosition += 100
                 }
                 
-                if yPosition > 700 && index < currentPageEnd - 1 {
-                    yPosition = 50
-                    context.beginPage()
-                    currentPageStart = index + 1
-                    break
-                }
+                // Seitenumbruch bei Bedarf
+                if yPosition > 700 {
+                            currentPageStart = currentPageEnd
+                            yPosition = 50
+                            continue
+                        }
             }
             
             currentPageStart = currentPageEnd
@@ -514,7 +541,7 @@ extension PDFGenerator {
                         statusText = "Einsatzstellenpumpe"
                         statusColor = .systemBlue
                     } else {
-                        statusText = fahrzeug.isSelected ? "Aktiv (Förderstrecke \(fahrzeug.foerderstrecke))" : "Inaktiv"
+                        statusText = fahrzeug.isSelected ? "Aktiv (Förderstrecke \(fahrzeug.foerderstrecke))" : "Nicht in Förderstrecke aktiv"
                         statusColor = fahrzeug.isSelected ? .systemGreen : .systemRed
                     }
                     
