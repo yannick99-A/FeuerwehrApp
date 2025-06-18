@@ -200,8 +200,8 @@ struct WasserfoerderstreckeView: View {
                     }
                 }
             }
-            .disabled(fahrzeuge.isEmpty && espFahrzeug == nil)
-            .opacity((fahrzeuge.isEmpty && espFahrzeug == nil) ? 0.6 : 1)
+            .disabled(!canGeneratePDF(for: foerderstrecke))
+            .opacity(canGeneratePDF(for: foerderstrecke) ? 1 : 0.6)
             .padding()
             .frame(maxWidth: .infinity)
             .background((fahrzeuge.isEmpty && espFahrzeug == nil) ? Color.gray : Color.blue)
@@ -272,4 +272,23 @@ struct WasserfoerderstreckeView: View {
             }
         }
     }
+    
+    // Prüft ob PDF-Erstellung möglich ist
+        private func canGeneratePDF(for foerderstrecke: Int) -> Bool {
+            let fahrzeuge = foerderstrecke == 1 ? orderedFahrzeuge1 : orderedFahrzeuge2
+            let hasESP = espFahrzeug != nil
+            
+            // Ungültige Fälle:
+            // 1. Nur ESP vorhanden (keine anderen Fahrzeuge)
+            // 2. Gar keine Fahrzeuge
+            if (fahrzeuge.isEmpty && hasESP) ||  // Nur ESP
+               (fahrzeuge.isEmpty && !hasESP) {  // Gar nichts
+                return false
+            }
+            
+            // Gültige Fälle:
+            // 1. Mindestens 1 Fahrzeug (egal ob mit oder ohne ESP)
+            // 2. ESP mit mindestens 1 Fahrzeug
+            return true
+        }
 }
