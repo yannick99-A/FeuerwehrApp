@@ -238,26 +238,29 @@ struct NotizenView: View {
     private var actionButtons: some View {
         HStack(spacing: 20) {
             if editingNote != nil {
-                Button("Abbrechen") {
-                    cancelEditing()
+                Button(action: cancelEditing) {
+                    Text("Abbrechen")
+                        .foregroundColor(.primary)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.gray.opacity(0.1))
+                        .cornerRadius(10)
                 }
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(10)
+                .contentShape(Rectangle()) // Sorgt für volle Klickfläche
             }
             
-            Button(editingNote != nil ? "Aktualisieren" : "Speichern") {
-                saveNote()
+            Button(action: saveNote) {
+                Text(editingNote != nil ? "Aktualisieren" : "Speichern")
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.blue)
+                    .cornerRadius(10)
             }
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(saveButtonDisabled ? Color.gray.opacity(0.3) : Color.blue)
-            .foregroundColor(.white)
-            .cornerRadius(10)
-            .disabled(saveButtonDisabled)
+            .contentShape(Rectangle())
         }
         .padding(.horizontal)
+        .buttonStyle(.plain) // Beibehaltung des gewünschten Button-Stils
     }
     
     private var savedNotesView: some View {
@@ -352,7 +355,7 @@ struct NotizenView: View {
     // MARK: - Computed Properties
     
     private var saveButtonDisabled: Bool {
-        DeviceHelper.isiPhone ? notizText.isEmpty : (notizText.isEmpty && canvasView.drawing.strokes.isEmpty)
+        return false
     }
     
     // MARK: - Functions
@@ -425,15 +428,19 @@ struct NotizenView: View {
     }
     
     private func saveNotes() {
+        // Sortiere die Notizen absteigend nach Erstellungsdatum
+        savedNotes.sort { $0.createdAt > $1.createdAt }
+        
         if let encoded = try? JSONEncoder().encode(savedNotes) {
             UserDefaults.standard.set(encoded, forKey: "savedNotes")
         }
     }
-    
+
     private func loadNotes() {
         if let data = UserDefaults.standard.data(forKey: "savedNotes"),
            let decoded = try? JSONDecoder().decode([Note].self, from: data) {
-            savedNotes = decoded.sorted { $0.createdAt > $1.createdAt }
+            // Die Notizen sind bereits in saveNotes() sortiert worden
+            savedNotes = decoded
         }
     }
 }
