@@ -93,6 +93,14 @@ struct WasserfoerderstreckeView: View {
             TextField("Funkrufgruppe Strecke \(foerderstrecke)", text: funkrufgruppe)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding(.horizontal)
+                .toolbar {
+                                ToolbarItemGroup(placement: .keyboard) {
+                                    Spacer()
+                                    Button("Fertig") {
+                                        hideKeyboard()
+                                    }
+                                }
+                            }
             
             List {
                 VStack(alignment: .leading, spacing: 8) {
@@ -106,6 +114,10 @@ struct WasserfoerderstreckeView: View {
                 .background(Color(.systemGray5))
                 .cornerRadius(8)
                 .listRowSeparator(.hidden)
+                .contentShape(Rectangle())
+                    .onTapGesture {
+                        hideKeyboard()
+                    }
                 
                 // Liste der Fahrzeuge
                 ForEach(Array(fahrzeuge.enumerated()), id: \.element.fahrzeug.id) { index, element in

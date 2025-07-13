@@ -123,6 +123,9 @@ struct FeuerwehrDetailView: View {
         .onChange(of: feuerwehr) { _ in
             DataManager.shared.saveFeuerwehren(DataManager.shared.loadFeuerwehren())
         }
+        .onTapGesture {
+                    hideKeyboard()
+                }
     }
     
     private func deleteFahrzeug(at offsets: IndexSet) {

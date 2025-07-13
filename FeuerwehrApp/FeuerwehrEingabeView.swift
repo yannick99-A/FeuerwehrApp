@@ -109,7 +109,14 @@ struct FeuerwehrEingabeView: View {
                     .disabled(!isInputValid)
                 }
             }
+            .onTapGesture {
+                        hideKeyboard()
+                    }
         }
+        .contentShape(Rectangle()) // Wichtig für Tap-Gesture
+            .onTapGesture {
+                hideKeyboard()
+            }
     }
     
     private func deleteFahrzeug(at offsets: IndexSet) {
@@ -129,3 +136,5 @@ struct FeuerwehrEingabeView: View {
         }
     }
 }
+
+

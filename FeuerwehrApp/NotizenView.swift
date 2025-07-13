@@ -715,7 +715,7 @@ func checkCameraPermissions() {
     }
 }
 
-extension UIImage: Identifiable {
+extension UIImage: @retroactive Identifiable {
     public var id: String { UUID().uuidString }
 }
 
