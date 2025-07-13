@@ -16,6 +16,8 @@ struct NotizenView: View {
     @State private var isDrawingFullscreen = false
     @State private var showDeleteAlert = false
     @State private var noteToDelete: Note? = nil
+    @State private var isKeyboardVisible = false
+    @State private var keyboardHeight: CGFloat = 0
     
     var body: some View {
         NavigationStack {
@@ -124,19 +126,27 @@ struct NotizenView: View {
                                             .padding(.horizontal)
                                         
                                         if DeviceHelper.isiPhone || !isDrawingMode {
-                                            TextEditor(text: $notizText)
-                                                .frame(height: 150)
-                                                .padding()
-                                                .background(Color.gray.opacity(0.1))
-                                                .cornerRadius(12)
-                                                .overlay(
-                                                    RoundedRectangle(cornerRadius: 12)
-                                                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                                                )
-                                                .padding(.horizontal)
-                                        } else {
-                                            drawingView
-                                        }
+                                                                TextEditor(text: $notizText)
+                                                                    .frame(height: 150)
+                                                                    .padding()
+                                                                    .background(Color.gray.opacity(0.1))
+                                                                    .cornerRadius(12)
+                                                                    .overlay(
+                                                                        RoundedRectangle(cornerRadius: 12)
+                                                                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                                                    )
+                                                                    .padding(.horizontal)
+                                                                    .toolbar {
+                                                                        ToolbarItemGroup(placement: .keyboard) {
+                                                                            Spacer()
+                                                                            Button("Fertig") {
+                                                                                hideKeyboard()
+                                                                            }
+                                                                        }
+                                                                    }
+                                                            } else {
+                                                                drawingView
+                                                            }
                                     }
                     
                     // Aktionsbuttons
@@ -146,6 +156,11 @@ struct NotizenView: View {
                     savedNotesView
                 }
                 .padding(.vertical)
+                                .frame(maxWidth: .infinity)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    hideKeyboard()
+                                }
             }
             .navigationTitle("Notizen")
             .sheet(isPresented: $showCamera) {
@@ -184,6 +199,14 @@ struct NotizenView: View {
                     toolPicker.addObserver(canvasView)
                 }
             }
+            .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { notification in
+                            if let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
+                                keyboardHeight = keyboardFrame.height
+                            }
+                        }
+                        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+                            keyboardHeight = 0
+                        }
         }
     }
     
@@ -695,3 +718,12 @@ func checkCameraPermissions() {
 extension UIImage: Identifiable {
     public var id: String { UUID().uuidString }
 }
+
+// Keyboard-Hilfsfunktion
+#if canImport(UIKit)
+extension View {
+    func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+}
+#endif
