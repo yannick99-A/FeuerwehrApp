@@ -412,7 +412,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_ASSET_PATHS = "\"FeuerwehrApp/Preview Content\"";
 				DEVELOPMENT_TEAM = LL2JNH4N72;
 				ENABLE_PREVIEWS = YES;
@@ -421,8 +421,8 @@
 				INFOPLIST_KEY_CFBundleDisplayName = FeuerwehrApp;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Die App benötigt Kamerazugriff, um Fotos für Notizen aufzunehmen.";
-				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Wir benötigen Ihren Standort, um die Karte anzuzeigen.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Wir benötigen Ihren Standort, um die Karte anzuzeigen.";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Zur einfachen Markierung von Wasserentnahme, Fahrzeugen und Einsatzstellen auf der Karte. Standort ist optional.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Zur einfachen Markierung von Wasserentnahme, Fahrzeugen und Einsatzstellen auf der Karte. Standort ist optional.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -453,7 +453,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_ASSET_PATHS = "\"FeuerwehrApp/Preview Content\"";
 				DEVELOPMENT_TEAM = LL2JNH4N72;
 				ENABLE_PREVIEWS = YES;
@@ -462,8 +462,8 @@
 				INFOPLIST_KEY_CFBundleDisplayName = FeuerwehrApp;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Die App benötigt Kamerazugriff, um Fotos für Notizen aufzunehmen.";
-				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Wir benötigen Ihren Standort, um die Karte anzuzeigen.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Wir benötigen Ihren Standort, um die Karte anzuzeigen.";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Zur einfachen Markierung von Wasserentnahme, Fahrzeugen und Einsatzstellen auf der Karte. Standort ist optional.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Zur einfachen Markierung von Wasserentnahme, Fahrzeugen und Einsatzstellen auf der Karte. Standort ist optional.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
