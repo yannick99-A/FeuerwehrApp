@@ -16,7 +16,7 @@ struct FeuerwehrEingabeView: View {
             besatzung: 1,
             standardAgtTraeger: 0,
             agtTraeger: 0,
-            isSelected: true // Standardmäßig ausgewählt
+            isSelected: true
         )
     ]
     
@@ -29,14 +29,14 @@ struct FeuerwehrEingabeView: View {
         NavigationView {
             Form {
                 Section(header: Text("Feuerwehr-Daten")) {
-                                    TextField("Name", text: $name)
-                                    TextField("Ort", text: $ort)
-                                    Picker("Gruppe", selection: $selectedGruppe) {
-                                        ForEach(FeuerwehrGruppe.allCases, id: \.self) { gruppe in
-                                            Text(gruppe.rawValue).tag(gruppe)
-                                        }
-                                    }
-                                }
+                    TextField("Name", text: $name)
+                    TextField("Ort", text: $ort)
+                    Picker("Gruppe", selection: $selectedGruppe) {
+                        ForEach(FeuerwehrGruppe.allCases, id: \.self) { gruppe in
+                            Text(gruppe.rawValue).tag(gruppe)
+                        }
+                    }
+                }
                 
                 Section(header: Text("Fahrzeuge")) {
                     ForEach($fahrzeuge) { $fahrzeug in
@@ -45,7 +45,6 @@ struct FeuerwehrEingabeView: View {
                                 .padding(.vertical, 4)
                             
                             TextField("Funkrufname", text: $fahrzeug.funkrufname)
-                                .keyboardType(.namePhonePad)
                                 .padding(.vertical, 4)
                             
                             HStack {
@@ -72,7 +71,7 @@ struct FeuerwehrEingabeView: View {
                     }
                     .onDelete(perform: deleteFahrzeug)
                     
-                    Button("Fahrzeug hinzufügen") {
+                    Button(action: {
                         fahrzeuge.append(
                             Fahrzeug(
                                 typ: "",
@@ -81,10 +80,23 @@ struct FeuerwehrEingabeView: View {
                                 besatzung: 1,
                                 standardAgtTraeger: 0,
                                 agtTraeger: 0,
-                                isSelected: true // Standardmäßig ausgewählt
+                                isSelected: true
                             )
                         )
+                    }) {
+                        HStack {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.system(size: 18))
+                            Text("Fahrzeug hinzufügen")
+                                .fontWeight(.semibold)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
                     }
+                    .buttonStyle(PlainButtonStyle())
                 }
             }
             .navigationTitle("Neue Feuerwehr")
@@ -97,26 +109,27 @@ struct FeuerwehrEingabeView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Speichern") {
                         let neueFeuerwehr = Feuerwehr(
-                                    name: name,
-                                    ort: ort,
-                                    gruppe: selectedGruppe,
-                                    fahrzeuge: fahrzeuge
-                                )
-                                feuerwehren.append(neueFeuerwehr)
-                                DataManager.shared.saveFeuerwehren(feuerwehren)
-                                isPresented = false
+                            name: name,
+                            ort: ort,
+                            gruppe: selectedGruppe,
+                            fahrzeuge: fahrzeuge
+                        )
+                        feuerwehren.append(neueFeuerwehr)
+                        DataManager.shared.saveFeuerwehren(feuerwehren)
+                        isPresented = false
                     }
                     .disabled(!isInputValid)
                 }
             }
-            .onTapGesture {
+            // Das onTapGesture wird NUR auf den Hintergrund angewendet, nicht auf Buttons
+            .background(
+                Color.clear
+                    .contentShape(Rectangle())
+                    .onTapGesture {
                         hideKeyboard()
                     }
+            )
         }
-        .contentShape(Rectangle()) // Wichtig für Tap-Gesture
-            .onTapGesture {
-                hideKeyboard()
-            }
     }
     
     private func deleteFahrzeug(at offsets: IndexSet) {
@@ -130,11 +143,9 @@ struct FeuerwehrEingabeView: View {
                     besatzung: 1,
                     standardAgtTraeger: 0,
                     agtTraeger: 0,
-                    isSelected: true // Standardmäßig ausgewählt
+                    isSelected: true
                 )
             )
         }
     }
 }
-
-
