@@ -39,37 +39,65 @@ struct FeuerwehrEingabeView: View {
                 }
                 
                 Section(header: Text("Fahrzeuge")) {
-                    ForEach($fahrzeuge) { $fahrzeug in
+                    ForEach(Array(fahrzeuge.enumerated()), id: \.element.id) { index, _ in
                         VStack(alignment: .leading, spacing: 8) {
-                            TextField("Fahrzeugtyp", text: $fahrzeug.typ)
+                            // Header mit Entfernen-Button
+                            HStack {
+                                Text("Fahrzeug \(index + 1)")
+                                    .font(.headline)
+                                    .foregroundColor(.gray)
+                                
+                                Spacer()
+                                
+                                // Entfernen-Button nur anzeigen, wenn mehr als 1 Fahrzeug vorhanden
+                                if fahrzeuge.count > 1 {
+                                    Button(action: {
+                                        removeFahrzeug(at: index)
+                                    }) {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .foregroundColor(.red)
+                                            .font(.system(size: 20))
+                                    }
+                                    .buttonStyle(BorderlessButtonStyle())
+                                }
+                            }
+                            .padding(.bottom, 4)
+                            
+                            // Fahrzeug-Eingabefelder
+                            TextField("Fahrzeugtyp", text: $fahrzeuge[index].typ)
                                 .padding(.vertical, 4)
                             
-                            TextField("Funkrufname", text: $fahrzeug.funkrufname)
+                            TextField("Funkrufname", text: $fahrzeuge[index].funkrufname)
                                 .padding(.vertical, 4)
                             
                             HStack {
-                                Text("Standardbesatzung: \(fahrzeug.standardBesatzung)")
+                                Text("Standardbesatzung: \(fahrzeuge[index].standardBesatzung)")
                                 Spacer()
                                 Stepper("",
-                                    value: $fahrzeug.standardBesatzung,
+                                    value: $fahrzeuge[index].standardBesatzung,
                                     in: 1...20
                                 )
                                 .labelsHidden()
                             }
                             
                             HStack {
-                                Text("Standard-AGT-Träger: \(fahrzeug.standardAgtTraeger)")
+                                Text("Standard-AGT-Träger: \(fahrzeuge[index].standardAgtTraeger)")
                                 Spacer()
                                 Stepper("",
-                                    value: $fahrzeug.standardAgtTraeger,
-                                    in: 0...fahrzeug.standardBesatzung
+                                    value: $fahrzeuge[index].standardAgtTraeger,
+                                    in: 0...fahrzeuge[index].standardBesatzung
                                 )
                                 .labelsHidden()
                             }
                         }
                         .padding(.vertical, 8)
+                        .padding(.horizontal, 4)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color(.systemGray6))
+                                .padding(.horizontal, -8)
+                        )
                     }
-                    .onDelete(perform: deleteFahrzeug)
                     
                     Button(action: {
                         fahrzeuge.append(
@@ -121,7 +149,6 @@ struct FeuerwehrEingabeView: View {
                     .disabled(!isInputValid)
                 }
             }
-            // Das onTapGesture wird NUR auf den Hintergrund angewendet, nicht auf Buttons
             .background(
                 Color.clear
                     .contentShape(Rectangle())
@@ -130,6 +157,11 @@ struct FeuerwehrEingabeView: View {
                     }
             )
         }
+    }
+    
+    private func removeFahrzeug(at index: Int) {
+        guard fahrzeuge.count > 1 else { return }
+        fahrzeuge.remove(at: index)
     }
     
     private func deleteFahrzeug(at offsets: IndexSet) {
