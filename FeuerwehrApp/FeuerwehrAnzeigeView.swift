@@ -35,7 +35,7 @@ struct FeuerwehrAnzeigeView: View {
                                 .font(.title2)
                                 .bold()
                             
-                            Text("Wähle Feuerwehren in der Sidebar aus oder fügen neue hinzu.")
+                            Text("Wähle Feuerwehren aus der Sidebar aus oder füge Neue hinzu.")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                                 .multilineTextAlignment(.center)

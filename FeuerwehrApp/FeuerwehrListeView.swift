@@ -1,7 +1,6 @@
 // FeuerwehrListeView.swift
 import SwiftUI
 
-// FeuerwehrListeView.swift
 struct FeuerwehrListeView: View {
     @Binding var feuerwehren: [Feuerwehr]
     @State private var navigationPath = NavigationPath()
@@ -42,27 +41,6 @@ struct FeuerwehrListeView: View {
                     deleteFeuerwehr(at: offsets, gruppe: .bereitschaft)
                 }
             }
-            // Spenden-Section
-            /*Section {
-                                Button(action: {
-                                    showSafariView = true
-                                }) {
-                                    HStack {
-                                        Image(systemName: "heart.fill")
-                                            .foregroundColor(.red)
-                                        Text("Spenden für die Feuerwehr")
-                                            .foregroundColor(.primary)
-                                        Spacer()
-                                        Image(systemName: "chevron.right")
-                                            .foregroundColor(.gray)
-                                    }
-                                }
-                                .sheet(isPresented: $showSafariView) {
-                                    if let url = URL(string: "https://paypal.me/ffoldenrode") {
-                                        SafariView(url: url)
-                                    }
-                                }
-                            }*/
         }
         .navigationTitle("Alle Feuerwehren")
         .toolbar {
@@ -92,19 +70,65 @@ struct FeuerwehrDetailView: View {
             }
             
             Section(header: Text("Fahrzeuge")) {
-                ForEach($feuerwehr.fahrzeuge) { $fahrzeug in
-                    VStack(alignment: .leading) {
+                ForEach(Array($feuerwehr.fahrzeuge.enumerated()), id: \.element.id) { index, $fahrzeug in
+                    VStack(alignment: .leading, spacing: 12) {
+                        // Header mit Entfernen-Button (nur wenn mehr als 1 Fahrzeug)
+                        HStack {
+                            Text("Fahrzeug \(index + 1)")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                                .bold()
+                            
+                            Spacer()
+                            
+                            // Entfernen-Button nur anzeigen, wenn mehr als 1 Fahrzeug vorhanden
+                            if feuerwehr.fahrzeuge.count > 1 {
+                                Button(action: {
+                                    removeFahrzeug(at: index)
+                                }) {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundColor(.red)
+                                        .font(.system(size: 20))
+                                }
+                                .buttonStyle(BorderlessButtonStyle())
+                            }
+                        }
+                        .padding(.bottom, 4)
+                        
+                        // Fahrzeug-Eingabefelder
                         Toggle(isOn: $fahrzeug.isSelected) {
                             TextField("Fahrzeugtyp", text: $fahrzeug.typ)
+                                .padding(.vertical, 6)
+                                .background(Color(.systemGray6))
+                                .cornerRadius(4)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                )
                         }
+                        
                         TextField("Funkrufname", text: $fahrzeug.funkrufname)
+                            .padding(.vertical, 6)
+                            .background(Color(.systemGray6))
+                            .cornerRadius(4)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 4)
+                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                            )
+                        
                         Stepper("Besatzung: \(fahrzeug.besatzung)", value: $fahrzeug.besatzung, in: 0...20)
+                        
                         Stepper("AGT-Träger: \(fahrzeug.agtTraeger)", value: $fahrzeug.agtTraeger, in: 0...fahrzeug.besatzung)
                     }
+                    .padding(.vertical, 10)
+                    .padding(.horizontal, 4)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color(.systemGray6).opacity(0.5))
+                    )
                 }
-                .onDelete(perform: deleteFahrzeug)
                 
-                Button("Fahrzeug hinzufügen") {
+                Button(action: {
                     feuerwehr.fahrzeuge.append(
                         Fahrzeug(
                             typ: "Neues Fahrzeug",
@@ -113,19 +137,42 @@ struct FeuerwehrDetailView: View {
                             besatzung: 1,
                             standardAgtTraeger: 0,
                             agtTraeger: 0,
-                            isSelected: true // Standardmäßig ausgewählt
+                            isSelected: true
                         )
                     )
+                }) {
+                    HStack {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.system(size: 18))
+                        Text("Fahrzeug hinzufügen")
+                            .fontWeight(.semibold)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
                 }
+                .buttonStyle(PlainButtonStyle())
+                .padding(.top, 8)
             }
         }
         .navigationTitle(feuerwehr.name)
         .onChange(of: feuerwehr) { _ in
             DataManager.shared.saveFeuerwehren(DataManager.shared.loadFeuerwehren())
         }
-        .onTapGesture {
+        .background(
+            Color.clear
+                .contentShape(Rectangle())
+                .onTapGesture {
                     hideKeyboard()
                 }
+        )
+    }
+    
+    private func removeFahrzeug(at index: Int) {
+        guard feuerwehr.fahrzeuge.count > 1 else { return }
+        feuerwehr.fahrzeuge.remove(at: index)
     }
     
     private func deleteFahrzeug(at offsets: IndexSet) {
