@@ -41,10 +41,51 @@ struct FeuerwehrListeView: View {
                     deleteFeuerwehr(at: offsets, gruppe: .bereitschaft)
                 }
             }
+            
+            // Spenden-Section (erneuert und verbessert)
+            Section {
+                Button(action: {
+                    showSafariView = true
+                }) {
+                    HStack {
+                        Image(systemName: "heart.circle.fill")
+                            .font(.title2)
+                            .foregroundColor(.red)
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Feuerwehr unterstützen")
+                                .font(.headline)
+                                .foregroundColor(.primary)
+                            
+                            Text("Hilf mit einer Spende die Feuerwehrarbeit zu finanzieren")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.leading)
+                        }
+                        
+                        Spacer()
+                        
+                        Image(systemName: "arrow.up.right")
+                            .foregroundColor(.gray)
+                    }
+                    .padding(.vertical, 8)
+                }
+            } footer: {
+                Text("Die App ist kostenlos. Spenden gehen direkt an die Feuerwehr und helfen bei der Finanzierung von Ausrüstung und Material.")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .padding(.top, 4)
+            }
         }
         .navigationTitle("Alle Feuerwehren")
         .toolbar {
             EditButton()
+        }
+        .sheet(isPresented: $showSafariView) {
+            if let url = URL(string: "https://paypal.me/ffoldenrode") {
+                SafariView(url: url)
+                    .edgesIgnoringSafeArea(.all)
+            }
         }
     }
     
@@ -186,7 +227,9 @@ struct SafariView: UIViewControllerRepresentable {
     let url: URL
     
     func makeUIViewController(context: UIViewControllerRepresentableContext<SafariView>) -> SFSafariViewController {
-        return SFSafariViewController(url: url)
+        let safariVC = SFSafariViewController(url: url)
+        safariVC.preferredControlTintColor = .red
+        return safariVC
     }
     
     func updateUIViewController(_ uiViewController: SFSafariViewController, context: UIViewControllerRepresentableContext<SafariView>) {}
