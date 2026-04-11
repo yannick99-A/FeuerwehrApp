@@ -126,16 +126,22 @@ struct WasserfoerderstreckeView: View {
                         feuerwehrName: element.feuerwehrName,
                         index: index,
                         distance: Binding(
-                            get: { distances[index] },
-                            set: { newValue in
-                                if foerderstrecke == 1 {
-                                    distances1[index] = newValue
-                                } else {
-                                    distances2[index] = newValue
-                                }
-                                calculateTotalDistance()
-                            }
-                        ),
+                                                get: {
+                                                    distances.indices.contains(index) ? distances[index] : 0
+                                                },
+                                                set: { newValue in
+                                                    if foerderstrecke == 1 {
+                                                        if distances1.indices.contains(index) {
+                                                            distances1[index] = newValue
+                                                        }
+                                                    } else {
+                                                        if distances2.indices.contains(index) {
+                                                            distances2[index] = newValue
+                                                        }
+                                                    }
+                                                    calculateTotalDistance()
+                                                }
+                                            ),
                         showArrow: index < fahrzeuge.count
                     )
                 }

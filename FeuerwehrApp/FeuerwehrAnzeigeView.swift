@@ -44,8 +44,9 @@ struct FeuerwehrAnzeigeView: View {
                         .padding(40)
                     } else {
                         ForEach(feuerwehren.filter { selectedFeuerwehren.contains($0.id) }) { feuerwehr in
+                            // Hier nutzen wir jetzt unser Safe Binding statt dem alten Index-Binding
                             EinzelneFeuerwehrView(
-                                feuerwehr: binding(for: feuerwehr),
+                                feuerwehr: safeBinding(for: feuerwehr.id),
                                 feuerwehren: $feuerwehren
                             )
                         }
@@ -99,11 +100,18 @@ struct FeuerwehrAnzeigeView: View {
         }
     }
     
-    private func binding(for feuerwehr: Feuerwehr) -> Binding<Feuerwehr> {
-        guard let index = feuerwehren.firstIndex(where: { $0.id == feuerwehr.id }) else {
-            fatalError("Feuerwehr nicht gefunden")
-        }
-        return $feuerwehren[index]
+    // Die sichere Methode, um ein Element als Binding zu übergeben, ohne Index-Crashes
+    private func safeBinding(for id: UUID) -> Binding<Feuerwehr> {
+        Binding<Feuerwehr>(
+            get: {
+                feuerwehren.first(where: { $0.id == id }) ?? Feuerwehr(name: "Wird gelöscht...", ort: "", gruppe: .ortsfeuerwehr, fahrzeuge: [])
+            },
+            set: { newValue in
+                if let index = feuerwehren.firstIndex(where: { $0.id == id }) {
+                    feuerwehren[index] = newValue
+                }
+            }
+        )
     }
     
     private func gesamtBesatzungBerechnen() -> Int {

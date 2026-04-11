@@ -18,6 +18,7 @@ struct NotizenView: View {
     @State private var noteToDelete: Note? = nil
     @State private var isKeyboardVisible = false
     @State private var keyboardHeight: CGFloat = 0
+    @State private var pdfURL: IdentifiableURL?
     
     var body: some View {
         NavigationStack {
@@ -163,6 +164,19 @@ struct NotizenView: View {
                                 }
             }
             .navigationTitle("Notizen")
+            .toolbar {
+                            // Export Button oben rechts
+                            ToolbarItem(placement: .navigationBarTrailing) {
+                                Button(action: exportNotesToPDF) {
+                                    Image(systemName: "square.and.arrow.up")
+                                }
+                                .disabled(savedNotes.isEmpty) // Deaktiviert, wenn keine Notizen da sind
+                            }
+                        }
+                        .sheet(item: $pdfURL) { identifiableURL in
+                            // Nutzt den ShareSheet, den du bereits in WasserfoerderstreckeView definiert hast
+                            ShareSheet(activityItems: [identifiableURL.url])
+                        }
             .sheet(isPresented: $showCamera) {
                 CameraView { image in
                     if let image = image {
@@ -466,6 +480,12 @@ struct NotizenView: View {
             savedNotes = decoded
         }
     }
+    
+    private func exportNotesToPDF() {
+            if let url = PDFGenerator.generateNotesPDF(notes: savedNotes) {
+                self.pdfURL = IdentifiableURL(url: url)
+            }
+        }
 }
 
 // MARK: - Hilfsstrukturen

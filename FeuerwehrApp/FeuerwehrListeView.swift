@@ -1,5 +1,6 @@
 // FeuerwehrListeView.swift
 import SwiftUI
+import SafariServices
 
 struct FeuerwehrListeView: View {
     @Binding var feuerwehren: [Feuerwehr]
@@ -9,8 +10,11 @@ struct FeuerwehrListeView: View {
     var body: some View {
         List {
             Section(header: Text("Ortsfeuerwehren")) {
-                ForEach($feuerwehren.filter { $0.wrappedValue.gruppe == .ortsfeuerwehr }) { $feuerwehr in
-                    NavigationLink(destination: FeuerwehrDetailView(feuerwehr: $feuerwehr)) {
+                ForEach(feuerwehren.filter { $0.gruppe == .ortsfeuerwehr }) { feuerwehr in
+                    NavigationLink(destination: FeuerwehrDetailView(
+                        feuerwehr: safeBinding(for: feuerwehr.id),
+                        onSave: saveAll
+                    )) {
                         VStack(alignment: .leading) {
                             Text(feuerwehr.name)
                                 .font(.headline)
@@ -26,8 +30,11 @@ struct FeuerwehrListeView: View {
             }
             
             Section(header: Text("Feuerwehrbereitschaft")) {
-                ForEach($feuerwehren.filter { $0.wrappedValue.gruppe == .bereitschaft }) { $feuerwehr in
-                    NavigationLink(destination: FeuerwehrDetailView(feuerwehr: $feuerwehr)) {
+                ForEach(feuerwehren.filter { $0.gruppe == .bereitschaft }) { feuerwehr in
+                    NavigationLink(destination: FeuerwehrDetailView(
+                        feuerwehr: safeBinding(for: feuerwehr.id),
+                        onSave: saveAll
+                    )) {
                         VStack(alignment: .leading) {
                             Text(feuerwehr.name)
                                 .font(.headline)
@@ -42,7 +49,7 @@ struct FeuerwehrListeView: View {
                 }
             }
             
-            // Spenden-Section (erneuert und verbessert)
+            // Spenden-Section
             Section {
                 Button(action: {
                     showSafariView = true
@@ -62,9 +69,7 @@ struct FeuerwehrListeView: View {
                                 .foregroundColor(.secondary)
                                 .multilineTextAlignment(.leading)
                         }
-                        
                         Spacer()
-                        
                         Image(systemName: "arrow.up.right")
                             .foregroundColor(.gray)
                     }
@@ -81,6 +86,9 @@ struct FeuerwehrListeView: View {
         .toolbar {
             EditButton()
         }
+        .onChange(of: feuerwehren) { _ in
+            saveAll()
+        }
         .sheet(isPresented: $showSafariView) {
             if let url = URL(string: "https://paypal.me/ffoldenrode") {
                 SafariView(url: url)
@@ -89,19 +97,38 @@ struct FeuerwehrListeView: View {
         }
     }
     
+    // MARK: - Safe Binding für Feuerwehren
+    // Diese Funktion verhindert den Crash, wenn eine Feuerwehr gelöscht wird, während sie noch angezeigt wird.
+    private func safeBinding(for id: UUID) -> Binding<Feuerwehr> {
+        Binding<Feuerwehr>(
+            get: {
+                feuerwehren.first(where: { $0.id == id }) ?? Feuerwehr(name: "", ort: "", gruppe: .ortsfeuerwehr, fahrzeuge: [])
+            },
+            set: { newValue in
+                if let index = feuerwehren.firstIndex(where: { $0.id == id }) {
+                    feuerwehren[index] = newValue
+                }
+            }
+        )
+    }
+    
+    private func saveAll() {
+        DataManager.shared.saveFeuerwehren(feuerwehren)
+    }
+    
     private func deleteFeuerwehr(at offsets: IndexSet, gruppe: FeuerwehrGruppe) {
         let filtered = feuerwehren.filter { $0.gruppe == gruppe }
         for index in offsets {
-            if let globalIndex = feuerwehren.firstIndex(where: { $0.id == filtered[index].id }) {
-                feuerwehren.remove(at: globalIndex)
-            }
+            let idToDelete = filtered[index].id
+            feuerwehren.removeAll { $0.id == idToDelete }
         }
-        DataManager.shared.saveFeuerwehren(feuerwehren)
+        saveAll()
     }
 }
 
 struct FeuerwehrDetailView: View {
     @Binding var feuerwehr: Feuerwehr
+    var onSave: () -> Void
     
     var body: some View {
         Form {
@@ -111,21 +138,22 @@ struct FeuerwehrDetailView: View {
             }
             
             Section(header: Text("Fahrzeuge")) {
-                ForEach(Array($feuerwehr.fahrzeuge.enumerated()), id: \.element.id) { index, $fahrzeug in
+                // Hier iterieren wir über das rohe Array und bauen uns für jedes Item ein Safe Binding
+                ForEach(feuerwehr.fahrzeuge) { fahrzeug in
+                    let fahrzeugBinding = safeFahrzeugBinding(for: fahrzeug.id)
+                    
                     VStack(alignment: .leading, spacing: 12) {
-                        // Header mit Entfernen-Button (nur wenn mehr als 1 Fahrzeug)
                         HStack {
-                            Text("Fahrzeug \(index + 1)")
+                            Text(fahrzeug.typ.isEmpty ? "Neues Fahrzeug" : fahrzeug.typ)
                                 .font(.subheadline)
                                 .foregroundColor(.gray)
                                 .bold()
                             
                             Spacer()
                             
-                            // Entfernen-Button nur anzeigen, wenn mehr als 1 Fahrzeug vorhanden
                             if feuerwehr.fahrzeuge.count > 1 {
                                 Button(action: {
-                                    removeFahrzeug(at: index)
+                                    removeFahrzeug(withId: fahrzeug.id)
                                 }) {
                                     Image(systemName: "xmark.circle.fill")
                                         .foregroundColor(.red)
@@ -136,51 +164,40 @@ struct FeuerwehrDetailView: View {
                         }
                         .padding(.bottom, 4)
                         
-                        // Fahrzeug-Eingabefelder
-                        Toggle(isOn: $fahrzeug.isSelected) {
-                            TextField("Fahrzeugtyp", text: $fahrzeug.typ)
+                        HStack {
+                            TextField("Fahrzeugtyp", text: fahrzeugBinding.typ)
                                 .padding(.vertical, 6)
+                                .padding(.horizontal, 8)
                                 .background(Color(.systemGray6))
                                 .cornerRadius(4)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 4)
-                                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                                )
+                                .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.gray.opacity(0.3), lineWidth: 1))
+                            
+                            Toggle("", isOn: fahrzeugBinding.isSelected)
+                                .labelsHidden()
                         }
                         
-                        TextField("Funkrufname", text: $fahrzeug.funkrufname)
+                        TextField("Funkrufname", text: fahrzeugBinding.funkrufname)
                             .padding(.vertical, 6)
+                            .padding(.horizontal, 8)
                             .background(Color(.systemGray6))
                             .cornerRadius(4)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 4)
-                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                            )
+                            .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.gray.opacity(0.3), lineWidth: 1))
                         
-                        Stepper("Besatzung: \(fahrzeug.besatzung)", value: $fahrzeug.besatzung, in: 0...20)
+                        Stepper("Besatzung: \(fahrzeug.besatzung)", value: fahrzeugBinding.besatzung, in: 0...20)
                         
-                        Stepper("AGT-Träger: \(fahrzeug.agtTraeger)", value: $fahrzeug.agtTraeger, in: 0...fahrzeug.besatzung)
+                        Stepper("AGT-Träger: \(fahrzeug.agtTraeger)", value: fahrzeugBinding.agtTraeger, in: 0...fahrzeug.besatzung)
                     }
                     .padding(.vertical, 10)
                     .padding(.horizontal, 4)
-                    .background(
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color(.systemGray6).opacity(0.5))
-                    )
+                    .background(RoundedRectangle(cornerRadius: 8).fill(Color(.systemGray6).opacity(0.5)))
                 }
                 
                 Button(action: {
-                    feuerwehr.fahrzeuge.append(
-                        Fahrzeug(
-                            typ: "Neues Fahrzeug",
-                            funkrufname: "",
-                            standardBesatzung: 1,
-                            besatzung: 1,
-                            standardAgtTraeger: 0,
-                            agtTraeger: 0,
-                            isSelected: true
+                    withAnimation {
+                        feuerwehr.fahrzeuge.append(
+                            Fahrzeug(typ: "Neues Fahrzeug", funkrufname: "", standardBesatzung: 1, besatzung: 1, standardAgtTraeger: 0, agtTraeger: 0, isSelected: true)
                         )
-                    )
+                    }
                 }) {
                     HStack {
                         Image(systemName: "plus.circle.fill")
@@ -197,11 +214,27 @@ struct FeuerwehrDetailView: View {
                 .buttonStyle(PlainButtonStyle())
                 .padding(.top, 8)
             }
+            
+            Section {
+                Button(action: {
+                    onSave()
+                    hideKeyboard()
+                    let impact = UIImpactFeedbackGenerator(style: .medium)
+                    impact.impactOccurred()
+                }) {
+                    HStack {
+                        Spacer()
+                        Text("Speichern")
+                            .fontWeight(.bold)
+                            .font(.system(size: 18))
+                        Spacer()
+                    }
+                }
+                .foregroundColor(.white)
+                .listRowBackground(Color.blue)
+            }
         }
         .navigationTitle(feuerwehr.name)
-        .onChange(of: feuerwehr) { _ in
-            DataManager.shared.saveFeuerwehren(DataManager.shared.loadFeuerwehren())
-        }
         .background(
             Color.clear
                 .contentShape(Rectangle())
@@ -211,18 +244,28 @@ struct FeuerwehrDetailView: View {
         )
     }
     
-    private func removeFahrzeug(at index: Int) {
-        guard feuerwehr.fahrzeuge.count > 1 else { return }
-        feuerwehr.fahrzeuge.remove(at: index)
+    // MARK: - Safe Binding für Fahrzeuge
+    // Gibt einen Dummy zurück, wenn das Fahrzeug beim Rendern nicht mehr existiert
+    private func safeFahrzeugBinding(for id: UUID) -> Binding<Fahrzeug> {
+        Binding<Fahrzeug>(
+            get: {
+                feuerwehr.fahrzeuge.first(where: { $0.id == id }) ?? Fahrzeug(typ: "", funkrufname: "", standardBesatzung: 0, besatzung: 0, standardAgtTraeger: 0, agtTraeger: 0)
+            },
+            set: { newValue in
+                if let index = feuerwehr.fahrzeuge.firstIndex(where: { $0.id == id }) {
+                    feuerwehr.fahrzeuge[index] = newValue
+                }
+            }
+        )
     }
     
-    private func deleteFahrzeug(at offsets: IndexSet) {
-        feuerwehr.fahrzeuge.remove(atOffsets: offsets)
+    private func removeFahrzeug(withId id: UUID) {
+        withAnimation {
+            feuerwehr.fahrzeuge.removeAll { $0.id == id }
+        }
     }
 }
 
-// SafariView für die Web-Anzeige
-import SafariServices
 struct SafariView: UIViewControllerRepresentable {
     let url: URL
     

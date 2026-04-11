@@ -29,11 +29,13 @@ struct EinzelneFeuerwehrView: View {
             }
             .padding(.bottom, 8)
             
-            // Fahrzeugliste
-            ForEach($feuerwehr.fahrzeuge) { $fahrzeug in
+            // Fahrzeugliste - Jetzt abgesichert über safeFahrzeugBinding
+            ForEach(feuerwehr.fahrzeuge) { fahrzeug in
+                let fahrzeugBinding = safeFahrzeugBinding(for: fahrzeug.id)
+                
                 VStack(alignment: .leading, spacing: 12) {
                     // Fahrzeugtyp mit Funkrufname
-                    Text("\(fahrzeug.typ) - \(fahrzeug.funkrufname)")
+                    Text("\(fahrzeugBinding.wrappedValue.typ) - \(fahrzeugBinding.wrappedValue.funkrufname)")
                         .font(.subheadline.bold())
                         .padding(.bottom, 4)
                     
@@ -45,11 +47,11 @@ struct EinzelneFeuerwehrView: View {
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                             HStack {
-                                Toggle("", isOn: $fahrzeug.isSelected)
+                                Toggle("", isOn: fahrzeugBinding.isSelected)
                                     .labelsHidden()
-                                Text(fahrzeug.isSelected ? "Aktiviert" : "Deaktiviert")
+                                Text(fahrzeugBinding.wrappedValue.isSelected ? "Aktiviert" : "Deaktiviert")
                                     .font(.footnote)
-                                    .foregroundColor(fahrzeug.isSelected ? .green : .red)
+                                    .foregroundColor(fahrzeugBinding.wrappedValue.isSelected ? .green : .red)
                             }
                         }
                         
@@ -60,7 +62,7 @@ struct EinzelneFeuerwehrView: View {
                             Text("Förderstrecke")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
-                            Picker("", selection: $fahrzeug.foerderstrecke) {
+                            Picker("", selection: fahrzeugBinding.foerderstrecke) {
                                 Text("1").tag(1)
                                 Text("2").tag(2)
                                 Text("ESP").tag(3)
@@ -68,7 +70,7 @@ struct EinzelneFeuerwehrView: View {
                             }
                             .pickerStyle(SegmentedPickerStyle())
                             .frame(width: 150)
-                            .onChange(of: $fahrzeug.foerderstrecke.wrappedValue) { newValue in
+                            .onChange(of: fahrzeugBinding.foerderstrecke.wrappedValue) { newValue in
                                 if newValue == 3 {
                                     resetOtherESPs(except: fahrzeug.id)
                                 }
@@ -79,18 +81,18 @@ struct EinzelneFeuerwehrView: View {
                     // Besatzungssteuerung
                     VStack(spacing: 8) {
                         HStack {
-                            Text("Besatzung: \(fahrzeug.besatzung)")
+                            Text("Besatzung: \(fahrzeugBinding.wrappedValue.besatzung)")
                             Spacer()
-                            Stepper("", value: $fahrzeug.besatzung, in: 0...20)
+                            Stepper("", value: fahrzeugBinding.besatzung, in: 0...20)
                                 .labelsHidden()
                         }
                         
                         HStack {
-                            Text("AGT-Träger: \(fahrzeug.agtTraeger)")
+                            Text("AGT-Träger: \(fahrzeugBinding.wrappedValue.agtTraeger)")
                             Spacer()
                             Stepper("",
-                                value: $fahrzeug.agtTraeger,
-                                in: 0...fahrzeug.besatzung
+                                value: fahrzeugBinding.agtTraeger,
+                                in: 0...fahrzeugBinding.wrappedValue.besatzung
                             )
                             .labelsHidden()
                         }
@@ -111,6 +113,20 @@ struct EinzelneFeuerwehrView: View {
         .onChange(of: feuerwehr.fahrzeuge) { _ in
             DataManager.shared.saveFeuerwehren(feuerwehren)
         }
+    }
+    
+    // Die sichere Methode für Fahrzeug-Bindings
+    private func safeFahrzeugBinding(for id: UUID) -> Binding<Fahrzeug> {
+        Binding<Fahrzeug>(
+            get: {
+                feuerwehr.fahrzeuge.first(where: { $0.id == id }) ?? Fahrzeug(typ: "Gelöscht", funkrufname: "", standardBesatzung: 0, besatzung: 0, standardAgtTraeger: 0, agtTraeger: 0)
+            },
+            set: { newValue in
+                if let index = feuerwehr.fahrzeuge.firstIndex(where: { $0.id == id }) {
+                    feuerwehr.fahrzeuge[index] = newValue
+                }
+            }
+        )
     }
     
     // Setzt alle anderen ESPs auf Förderstrecke 1 zurück

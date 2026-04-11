@@ -1,5 +1,6 @@
 import Foundation
 import UIKit
+import PencilKit
 
 struct PDFGenerator {
     static func generateCombinedPDF(
@@ -607,5 +608,143 @@ extension PDFGenerator {
         path.lineWidth = 0.5
         path.stroke()
         yPosition += 20
+    }
+}
+
+extension PDFGenerator {
+    static func generateNotesPDF(notes: [Note]) -> URL? {
+        // Standard US Letter / A4-ähnliches Format
+        let pageRect = CGRect(x: 0, y: 0, width: 612, height: 792)
+        let renderer = UIGraphicsPDFRenderer(bounds: pageRect)
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "dd.MM.yyyy - HH:mm 'Uhr'"
+        
+        let pdfData = renderer.pdfData { context in
+            var yPosition: CGFloat = 50
+            let margin: CGFloat = 50
+            let contentWidth = pageRect.width - 2 * margin
+            
+            context.beginPage()
+            
+            // Header
+            drawText(text: "Notizen Übersicht", x: margin, y: yPosition, font: .boldSystemFont(ofSize: 24), color: .black)
+            yPosition += 40
+            
+            // Chronologisch sortieren (Älteste zuerst, damit die Historie Sinn macht)
+            let sortedNotes = notes.sorted(by: { $0.createdAt < $1.createdAt })
+            
+            for note in sortedNotes {
+                // Seitenumbruch prüfen
+                if yPosition > 700 {
+                    context.beginPage()
+                    yPosition = 50
+                }
+                
+                // 1. Datum
+                let dateString = dateFormatter.string(from: note.createdAt)
+                drawText(text: dateString, x: margin, y: yPosition, font: .boldSystemFont(ofSize: 14), color: .blue)
+                yPosition += 25
+                
+                // 2. Text
+                if !note.text.isEmpty {
+                    let attributes: [NSAttributedString.Key: Any] = [
+                        .font: UIFont.systemFont(ofSize: 12),
+                        .foregroundColor: UIColor.black
+                    ]
+                    
+                    let maxSize = CGSize(width: contentWidth, height: .greatestFiniteMagnitude)
+                    let textRect = note.text.boundingRect(with: maxSize, options: .usesLineFragmentOrigin, attributes: attributes, context: nil)
+                    
+                    // Seitenumbruch für Text prüfen
+                    if yPosition + textRect.height > 740 {
+                        context.beginPage()
+                        yPosition = 50
+                    }
+                    
+                    note.text.draw(in: CGRect(x: margin, y: yPosition, width: contentWidth, height: textRect.height), withAttributes: attributes)
+                    yPosition += textRect.height + 15
+                }
+                
+                // 3. Zeichnungen (PencilKit)
+                if let drawingData = note.drawingData, let drawing = try? PKDrawing(data: drawingData) {
+                    let drawingBounds = drawing.bounds
+                    // Prüfen ob die Zeichnung Inhalte hat
+                    if !drawingBounds.isEmpty && !drawingBounds.isInfinite {
+                        let image = drawing.image(from: drawingBounds, scale: 2.0) // Scale für bessere Qualität
+                        let aspectRatio = image.size.height / image.size.width
+                        var drawHeight = contentWidth * aspectRatio
+                        
+                        // Höhe begrenzen, falls die Zeichnung extrem hoch ist
+                        if drawHeight > 300 {
+                            drawHeight = 300
+                        }
+                        
+                        if yPosition + drawHeight > 740 {
+                            context.beginPage()
+                            yPosition = 50
+                        }
+                        
+                        // Zentriert zeichnen
+                        let drawWidth = drawHeight / aspectRatio
+                        let xPos = margin + (contentWidth - drawWidth) / 2
+                        
+                        image.draw(in: CGRect(x: xPos, y: yPosition, width: drawWidth, height: drawHeight))
+                        yPosition += drawHeight + 20
+                    }
+                }
+                
+                // 4. Bilder aus der Galerie/Kamera
+                if let imagesData = note.imagesData {
+                    for imageData in imagesData {
+                        if let image = UIImage(data: imageData) {
+                            let aspectRatio = image.size.height / image.size.width
+                            var drawWidth = contentWidth
+                            var drawHeight = contentWidth * aspectRatio
+                            
+                            // Bildgröße begrenzen, damit es nicht die ganze Seite sprengt
+                            if drawHeight > 350 {
+                                drawHeight = 350
+                                drawWidth = drawHeight / aspectRatio
+                            }
+                            
+                            if yPosition + drawHeight > 740 {
+                                context.beginPage()
+                                yPosition = 50
+                            }
+                            
+                            // Bild zentrieren
+                            let xPos = margin + (contentWidth - drawWidth) / 2
+                            image.draw(in: CGRect(x: xPos, y: yPosition, width: drawWidth, height: drawHeight))
+                            yPosition += drawHeight + 20
+                        }
+                    }
+                }
+                
+                yPosition += 10
+                
+                // Trennlinie zwischen den Notizen
+                let path = UIBezierPath()
+                path.move(to: CGPoint(x: margin, y: yPosition))
+                path.addLine(to: CGPoint(x: pageRect.width - margin, y: yPosition))
+                UIColor.lightGray.setStroke()
+                path.lineWidth = 1
+                path.stroke()
+                yPosition += 25
+            }
+        }
+        
+        // Speichern der PDF
+        if let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+            let pdfURL = documentDirectory.appendingPathComponent("Notizen_Historie.pdf")
+            do {
+                try pdfData.write(to: pdfURL)
+                return pdfURL
+            } catch {
+                print("Fehler beim Speichern der PDF-Datei: \(error.localizedDescription)")
+            }
+        }
+        
+        return nil
     }
 }
