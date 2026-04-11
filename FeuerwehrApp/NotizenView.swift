@@ -208,12 +208,18 @@ struct NotizenView: View {
                 Text("Möchten Sie diese Notiz wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.")
             }
             .onAppear {
-                loadNotes()
-                if !DeviceHelper.isiPhone {
-                    toolPicker.addObserver(canvasView)
-                }
-            }
-            .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { notification in
+                            loadNotes()
+                            if !DeviceHelper.isiPhone {
+                                toolPicker.addObserver(canvasView)
+                            }
+                        }
+                        // NEU: Hört auf den Funkspruch aus den Einstellungen und leert die Ansicht sofort
+                        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("EinsatzReset"))) { _ in
+                            savedNotes.removeAll()
+                            cancelEditing() // Setzt auch halbfertige Skizzen/Texte im oberen Bereich zurück
+                        }
+                        // Ab hier geht es weiter mit deinen bestehenden Keyboard-Benachrichtigungen...
+                        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { notification in
                             if let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
                                 keyboardHeight = keyboardFrame.height
                             }

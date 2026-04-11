@@ -1,14 +1,36 @@
 // FeuerwehrListeView.swift
 import SwiftUI
 import SafariServices
+import PDFKit // WICHTIG: Wird für das Zusammenfügen der PDFs benötigt!
 
 struct FeuerwehrListeView: View {
     @Binding var feuerwehren: [Feuerwehr]
     @State private var navigationPath = NavigationPath()
     @State private var showSafariView = false
     
+    // Neue State-Variablen für Export und Reset
+    @State private var showResetAlert = false
+    @State private var pdfURL: IdentifiableURL?
+    
     var body: some View {
         List {
+            // MARK: - Einsatz-Verwaltung (NEU)
+            Section(header: Text("Einsatz-Verwaltung")) {
+                Button(action: {
+                    exportCompleteOperation()
+                }) {
+                    Label("Gesamten Einsatz exportieren", systemImage: "square.and.arrow.up")
+                        .foregroundColor(.blue)
+                }
+                
+                Button(role: .destructive, action: {
+                    showResetAlert = true
+                }) {
+                    Label("Einsatz beenden & zurücksetzen", systemImage: "trash")
+                        .foregroundColor(.red)
+                }
+            }
+            
             Section(header: Text("Ortsfeuerwehren")) {
                 ForEach(feuerwehren.filter { $0.gruppe == .ortsfeuerwehr }) { feuerwehr in
                     NavigationLink(destination: FeuerwehrDetailView(
@@ -95,10 +117,127 @@ struct FeuerwehrListeView: View {
                     .edgesIgnoringSafeArea(.all)
             }
         }
+        .sheet(item: $pdfURL) { identifiableURL in
+            ShareSheet(activityItems: [identifiableURL.url])
+        }
+        // Alert für das Zurücksetzen
+        .alert("Einsatz beenden?", isPresented: $showResetAlert) {
+            Button("Abbrechen", role: .cancel) {}
+            Button("Alles zurücksetzen", role: .destructive) {
+                resetEinsatz()
+            }
+        } message: {
+            Text("Möchtest du diesen Einsatz wirklich beenden? Alle Fahrzeuge werden deaktiviert, die Besatzung wird auf Standardwerte zurückgesetzt. Notizen und Karten-Routen werden unwiderruflich gelöscht!\n\n(Die Feuerwehren selbst bleiben erhalten)")
+        }
+    }
+    
+    // MARK: - Einsatz-Logik (NEU)
+    
+    private func resetEinsatz() {
+            // 1. Fahrzeuge zurücksetzen
+            for i in 0..<feuerwehren.count {
+                for j in 0..<feuerwehren[i].fahrzeuge.count {
+                    feuerwehren[i].fahrzeuge[j].isSelected = false
+                    feuerwehren[i].fahrzeuge[j].foerderstrecke = 1
+                    
+                    let fahrzeug = feuerwehren[i].fahrzeuge[j]
+                    feuerwehren[i].fahrzeuge[j].besatzung = fahrzeug.standardBesatzung
+                    feuerwehren[i].fahrzeuge[j].agtTraeger = fahrzeug.standardAgtTraeger
+                }
+            }
+            saveAll()
+            
+            // 2. Notizen aus dem Speicher löschen
+            UserDefaults.standard.removeObject(forKey: "savedNotes")
+            
+            // 3. Karten-Status löschen (Routen und Pins)
+            UserDefaults.standard.removeObject(forKey: "kartenState_v2")
+            
+            // NEU: Funkspruch an alle anderen Tabs senden, dass aufgeräumt wurde!
+            NotificationCenter.default.post(name: NSNotification.Name("EinsatzReset"), object: nil)
+            
+            // Haptisches Feedback für Erfolg
+            let impact = UINotificationFeedbackGenerator()
+            impact.notificationOccurred(.success)
+        }
+    
+    private func exportCompleteOperation() {
+        var urlsToMerge: [URL] = []
+        let activeFeuerwehrIDs = Set(feuerwehren.filter { fw in fw.fahrzeuge.contains(where: { $0.isSelected }) }.map { $0.id })
+        
+        // 1. Feuerwehr-Übersicht generieren
+        if let uebersichtURL = PDFGenerator.generateFeuerwehrUebersichtPDF(
+            feuerwehren: feuerwehren,
+            selectedFeuerwehren: activeFeuerwehrIDs,
+            includeInactiveVehicles: false,
+            espFahrzeug: nil // Könnte ausgebaut werden
+        ) {
+            urlsToMerge.append(uebersichtURL)
+        }
+        
+        // 2. Wasserförderstrecken generieren (Achtung: Distanzen sind 0, da sie in einer anderen View liegen)
+        for strecke in 1...2 {
+            let fahrzeugeStrecke = feuerwehren.flatMap { fw in
+                fw.fahrzeuge.filter { $0.isSelected && $0.foerderstrecke == strecke }
+                    .map { (fahrzeug: $0, feuerwehrName: fw.name) }
+            }
+            
+            if !fahrzeugeStrecke.isEmpty {
+                let dummyDistances = Array(repeating: 0, count: fahrzeugeStrecke.count)
+                if let wfsURL = PDFGenerator.generateCombinedPDF(
+                    for: fahrzeugeStrecke,
+                    distances: dummyDistances,
+                    foerderstrecke: strecke,
+                    funkrufgruppe: "",
+                    espFahrzeug: nil,
+                    andereFoerderstreckeFahrzeug: nil,
+                    espDistance: 0
+                ) {
+                    urlsToMerge.append(wfsURL)
+                }
+            }
+        }
+        
+        // 3. Notizen generieren
+        if let data = UserDefaults.standard.data(forKey: "savedNotes"),
+           let notes = try? JSONDecoder().decode([Note].self, from: data),
+           !notes.isEmpty {
+            if let notesURL = PDFGenerator.generateNotesPDF(notes: notes) {
+                urlsToMerge.append(notesURL)
+            }
+        }
+        
+        // 4. Alles zu einem Master-PDF mergen
+        if let mergedURL = mergePDFs(urls: urlsToMerge) {
+            self.pdfURL = IdentifiableURL(url: mergedURL)
+        }
+    }
+    
+    private func mergePDFs(urls: [URL]) -> URL? {
+        let pdfDocument = PDFDocument()
+        var pageCount = 0
+        
+        for url in urls {
+            if let doc = PDFDocument(url: url) {
+                for i in 0..<doc.pageCount {
+                    if let page = doc.page(at: i) {
+                        pdfDocument.insert(page, at: pageCount)
+                        pageCount += 1
+                    }
+                }
+            }
+        }
+        
+        if let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+            let outputURL = documentDirectory.appendingPathComponent("Gesamter_Einsatzbericht.pdf")
+            if pdfDocument.write(to: outputURL) {
+                return outputURL
+            }
+        }
+        return nil
     }
     
     // MARK: - Safe Binding für Feuerwehren
-    // Diese Funktion verhindert den Crash, wenn eine Feuerwehr gelöscht wird, während sie noch angezeigt wird.
     private func safeBinding(for id: UUID) -> Binding<Feuerwehr> {
         Binding<Feuerwehr>(
             get: {
@@ -126,6 +265,8 @@ struct FeuerwehrListeView: View {
     }
 }
 
+// ... Rest der Datei (FeuerwehrDetailView und SafariView) bleibt absolut unverändert! ...
+
 struct FeuerwehrDetailView: View {
     @Binding var feuerwehr: Feuerwehr
     var onSave: () -> Void
@@ -138,7 +279,6 @@ struct FeuerwehrDetailView: View {
             }
             
             Section(header: Text("Fahrzeuge")) {
-                // Hier iterieren wir über das rohe Array und bauen uns für jedes Item ein Safe Binding
                 ForEach(feuerwehr.fahrzeuge) { fahrzeug in
                     let fahrzeugBinding = safeFahrzeugBinding(for: fahrzeug.id)
                     
@@ -195,7 +335,7 @@ struct FeuerwehrDetailView: View {
                 Button(action: {
                     withAnimation {
                         feuerwehr.fahrzeuge.append(
-                            Fahrzeug(typ: "Neues Fahrzeug", funkrufname: "", standardBesatzung: 1, besatzung: 1, standardAgtTraeger: 0, agtTraeger: 0, isSelected: true)
+                            Fahrzeug(typ: "Neues Fahrzeug", funkrufname: "", standardBesatzung: 6, besatzung: 6, standardAgtTraeger: 0, agtTraeger: 0, isSelected: true)
                         )
                     }
                 }) {
@@ -245,7 +385,6 @@ struct FeuerwehrDetailView: View {
     }
     
     // MARK: - Safe Binding für Fahrzeuge
-    // Gibt einen Dummy zurück, wenn das Fahrzeug beim Rendern nicht mehr existiert
     private func safeFahrzeugBinding(for id: UUID) -> Binding<Fahrzeug> {
         Binding<Fahrzeug>(
             get: {
